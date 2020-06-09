@@ -1,42 +1,39 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
-public class PaintPanel extends JPanel implements MouseListener, MouseMotionListener {
-
-    private boolean createVertex = true;
-    private boolean deleteVertex;
-    private boolean connectVertex = false;
+public class PaintPanel extends JPanel {
     private ArrayList<Circle> circles = new ArrayList<>();
-    private ArrayList<Line> lines = new ArrayList<>();
-    private double startX;
-    private double startY;
-    private double endX;
-    private double endY;
+    private ArrayList<Line2D> lines = new ArrayList<>();
+    private ModeCreatingVertex modeCreatingVertex = new ModeCreatingVertex();
+    private ModeDeleting modeDeleting = new ModeDeleting();
+    private ModeConnectingVertex modeConnectingVertex = new ModeConnectingVertex();
 
     public PaintPanel() {
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        setFixedSize(this, this.getWidth(), this.getHeight());
+        setCreatingMode();
     }
 
     public void paint(Graphics g) {
+        g.setColor(Color.BLACK);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         Graphics2D graphics2D = (Graphics2D) g;
-        graphics2D.setStroke(new BasicStroke(2));
+        graphics2D.setStroke(new BasicStroke(7));
         graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2D.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         int counter = 0;
         graphics2D.setColor(Color.BLACK);
-        for (Line line : lines) {
+        for (Line2D line : lines) {
             graphics2D.draw(line);
         }
-        graphics2D.draw(new Line(startX, startY, endX, endY));
         for (Circle circle : circles) {
+            if (circle.equals(modeConnectingVertex.startCircle)) {
+                graphics2D.setColor(Color.RED);
+                graphics2D.draw(circle);
+            }
             graphics2D.setColor(Color.BLACK);
             graphics2D.fill(circle);
             graphics2D.setColor(Color.white);
@@ -44,89 +41,90 @@ public class PaintPanel extends JPanel implements MouseListener, MouseMotionList
                     (float) (circle.getY() + circle.getHeight() / 1.5));
             counter++;
         }
-
     }
 
-
-    private static void setFixedSize(JComponent component, int width, int height) {
-        Dimension dimension = new Dimension(width, height);
-        component.setMaximumSize(dimension);
-        component.setMinimumSize(dimension);
-        component.setPreferredSize(dimension);
-        component.setSize(dimension);
+    void setCreatingMode() {
+        removeMouseListener(modeConnectingVertex);
+        removeMouseListener(modeDeleting);
+        addMouseListener(modeCreatingVertex);
     }
 
-    @Override
-    public void mouseClicked(MouseEvent event) {
-        if (circles.isEmpty()) {
+    void setDeletingMode() {
+        removeMouseListener(modeConnectingVertex);
+        removeMouseListener(modeCreatingVertex);
+        addMouseListener(modeDeleting);
+    }
+
+    void setModeConnecting() {
+        removeMouseListener(modeDeleting);
+        removeMouseListener(modeCreatingVertex);
+        addMouseListener(modeConnectingVertex);
+    }
+
+    private class ModeCreatingVertex extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent event) {
             circles.add(new Circle(event.getX(), event.getY()));
             repaint();
-            return;
         }
-        if (event.getButton() == MouseEvent.BUTTON1) {
-            circles.add(new Circle(event.getX(), event.getY()));
-            repaint();
-            return;
-        }
-        if (event.getButton() == MouseEvent.BUTTON3) {
+    }
+
+    private class ModeDeleting extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent event) {
+            Circle deletingCircle = null;
+            ArrayList<Line2D> deletingLines = new ArrayList<>();
             for (Circle circle : circles) {
                 if (circle.contains(event.getX(), event.getY())) {
-                    circles.remove(circle);
-                    repaint();
-                    return;
+                    deletingCircle = circle;
                 }
+            }
+            for (Line2D line : lines) {
+                if (deletingCircle != null) {
+                    if (deletingCircle.contains(line.getX1(), line.getY1()) || deletingCircle.contains(line.getX2(), line.getY2())) {
+                        deletingLines.add(line);
+                    }
+                } else if (line.intersects(event.getX(), event.getY(), 35, 1)) { //basicStroke * 7
+                    System.out.println("yea");
+                    deletingLines.add(line);
+                }
+            }
+            deleteLines(deletingLines);
+            circles.remove(deletingCircle);
+            repaint();
+        }
+
+        private void deleteLines(ArrayList<Line2D> deletingLines) {
+            for (Line2D line : deletingLines) {
+                lines.remove(line);
             }
         }
     }
 
+    private class ModeConnectingVertex extends MouseAdapter {
+        Circle startCircle;
+        boolean clicked = false;
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
+        @Override
+        public void mouseClicked(MouseEvent e) {
             for (Circle circle : circles) {
-                if (circle.contains(e.getX(), e.getY())) {
-                    startX = circle.getX() + circle.getRADIUS() / 2;
-                    startY = circle.getY() + circle.getRADIUS() / 2;
-                    connectVertex = true;
+                if (!clicked) {
+                    if (circle.contains(e.getX(), e.getY())) {
+                        startCircle = circle;
+                        clicked = true;
+                        break;
+                    }
+                } else if (circle.contains(e.getX(), e.getY()) && !startCircle.contains(e.getX(), e.getY())) {
+                    lines.add(new Line2D.Double(startCircle.getX() + startCircle.getRADIUS() / 2,
+                            startCircle.getY() + startCircle.getRADIUS() / 2,
+                            circle.getX() + circle.getRADIUS() / 2,
+                            circle.getY() + circle.getRADIUS() / 2));
+                    startCircle = null;
+                    clicked = false;
+                    break;
                 }
             }
             repaint();
         }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            for (Circle circle : circles) {
-                if (circle.contains(e.getX(), e.getY()) && !circle.contains(startX, startY)) {
-                    endX = circle.getX() + circle.getRADIUS() / 2;
-                    endY = circle.getY() + circle.getRADIUS() / 2;
-                    lines.add(new Line(startX, startY, endX, endY));
-                }
-            }
-            repaint();
-        }
-        startX = startY = endX = endY = 0;
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-            if (connectVertex) {
-                endX = e.getX();
-                endY = e.getY();
-                repaint();
-            }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
     }
 }

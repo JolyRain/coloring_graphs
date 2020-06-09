@@ -3,7 +3,6 @@ import java.awt.*;
 
 class App {
     private JFrame frame;
-    private JTextField heightTextFiled;
     private PaintPanel graphicPanel;
 
     App() {
@@ -12,11 +11,12 @@ class App {
     }
 
     private void createFrame() {
-        frame = new JFrame("Моё страдание");
+        frame = new JFrame("Раскраска графа");
         frame.setSize(1280, 720);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
-        frame.setResizable(true);
+        frame.setLayout(null);
+        frame.setResizable(false);
     }
 
     void show() {
@@ -24,55 +24,58 @@ class App {
     }
 
     private void initElements() {
-        JPanel leftPanel = createLeftPanel();
-        leftPanel.setBounds(0, 0, 100, 250);
+        JPanel panel = createLeftPanel();
+        panel.setBounds(0, 0, 250, frame.getHeight());
         graphicPanel = new PaintPanel();
-//        JScrollPane scrollPanel = new JScrollPane(graphicPanel,
-//                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-//                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        graphicPanel.setBounds(250, 0, frame.getWidth(), frame.getHeight());
-        frame.add(graphicPanel);
-        frame.add(leftPanel);
-
+        graphicPanel.setLayout(null);
+        JScrollPane scrollPanel = new JScrollPane(graphicPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPanel.setBounds(250, 0, frame.getWidth() - 250, frame.getHeight());
+        frame.add(scrollPanel);
+        frame.add(panel);
     }
 
     private JPanel createLeftPanel() {
-        JPanel panel = new JPanel(null);
-
-        JLabel title = new JLabel("Раскраска дерева");
+        JPanel panel = new JPanel();
         Font font = new Font(Font.SANS_SERIF, Font.BOLD, 20);
-        title.setFont(font);
-        panel.add(title);
+        Font fontButton = new Font(Font.SANS_SERIF, Font.BOLD, 18);
 
-        panel.add(Box.createVerticalStrut(40));
+//        JLabel title = new JLabel("Раскраска графа");
+////        title.setBounds(10, 10, 100, 50);
+//        title.setFont(font);
+//        panel.add(title);
 
-        JLabel inputLabel = new JLabel("Введите высоту дерева");
-        inputLabel.setFont(font);
-        panel.add(inputLabel);
 
-        panel.add(Box.createVerticalStrut(10));
 
-        heightTextFiled = new JTextField();
-        heightTextFiled.setMaximumSize(new Dimension(panel.getWidth(), 30));
-        heightTextFiled.setFont(new Font(Font.DIALOG_INPUT, Font.PLAIN, 20));
-        panel.add(heightTextFiled);
-
-        panel.add(Box.createVerticalStrut(10));
-
-        JCheckBox randomCheck = new JCheckBox("Рандомное число потомков");
-        randomCheck.setFont(new Font(null, Font.BOLD, 15));
-        panel.add(randomCheck);
-
-        panel.add(Box.createVerticalStrut(10));
-
-        JButton buttonPaint = new JButton("Нарисовать");
-        buttonPaint.setMaximumSize(new Dimension(400, 50));
-        buttonPaint.setFont(font);
-        panel.add(buttonPaint);
-        buttonPaint.addActionListener(e -> {
-
+        JRadioButton creatingButton = new JRadioButton("Режим создания вершин", true);
+//        creatingButton.setBounds(10, 100, 100, 50);
+        creatingButton.setFont(fontButton);
+        creatingButton.addActionListener(e -> {
+            graphicPanel.setCreatingMode();
         });
-        panel.add(Box.createVerticalGlue());
+        panel.add(creatingButton);
+        JRadioButton connectingButton = new JRadioButton("Режим присоединения", false);
+//        creatingButton.setBounds(10, 100, 100, 50);
+        connectingButton.setFont(fontButton);
+        connectingButton.addActionListener(e -> {
+            graphicPanel.setModeConnecting();
+        });
+        panel.add(connectingButton);
+        JRadioButton deletingButton = new JRadioButton("Режим удаления", false);
+//        creatingButton.setBounds(10, 100, 100, 50);
+        deletingButton.setFont(fontButton);
+        deletingButton.addActionListener(e -> {
+            graphicPanel.setDeletingMode();
+        });
+        panel.add(deletingButton);
+
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(creatingButton);
+        buttonGroup.add(connectingButton);
+        buttonGroup.add(deletingButton);
+
         return panel;
     }
 }
