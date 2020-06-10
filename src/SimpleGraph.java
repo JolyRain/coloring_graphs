@@ -10,16 +10,23 @@ public class SimpleGraph implements Graph {
     private int edgeCount = 0;
     private int chromaticNumber = 0;
 
-    private void colorize() {
-        Stack<Vertex> coloredVertex = new Stack<>();
+    public void addVertex(Vertex vertex){
+        vertex.setNumber(vertexCount);
+        vertices.add(vertex);
+        vertexCount++;
+    }
+
+    public void colorize() {
+        ArrayList<Vertex> coloredVertices = new ArrayList<>();
         this.dfsRecursionImpl(vertices.get(0), vertex -> {
-            countChromaticNumber(coloredVertex, vertex);
-            coloredVertex.push(vertex);
+            countChromaticNumber(coloredVertices, vertex);
+            coloredVertices.add(vertex);
         });
     }
 
     private boolean isColorAdjacentVertex(Vertex otherColoredVertex) {
         for (Vertex currentVertex : adjacent(otherColoredVertex)) {
+            if (currentVertex.getColor() == null) return false;
             if (currentVertex.getColor().equals(otherColoredVertex.getColor())) {
                 return true;
             }
@@ -27,7 +34,7 @@ public class SimpleGraph implements Graph {
         return false;
     }
 
-    private void countChromaticNumber(Stack<Vertex> coloredVertices, Vertex vertex) {
+    private void countChromaticNumber(ArrayList<Vertex> coloredVertices, Vertex vertex) {
         int bufferChromaticNumber = 0;
         if (!coloredVertices.isEmpty()) {
             for (Vertex currentVertex : coloredVertices) {
@@ -43,6 +50,38 @@ public class SimpleGraph implements Graph {
             vertex.setColor();
             chromaticNumber++;
         }
+    }
+
+    public List<List<Vertex>> getAdjacentVertexList() {
+        return adjacentVertexList;
+    }
+
+    public void setAdjacentVertexList(List<List<Vertex>> adjacentVertexList) {
+        this.adjacentVertexList = adjacentVertexList;
+    }
+
+    public ArrayList<Vertex> getVertices() {
+        return vertices;
+    }
+
+    public void setVertices(ArrayList<Vertex> vertices) {
+        this.vertices = vertices;
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
+    }
+
+    public void setVertexCount(int vertexCount) {
+        this.vertexCount = vertexCount;
+    }
+
+    public int getEdgeCount() {
+        return edgeCount;
+    }
+
+    public void setEdgeCount(int edgeCount) {
+        this.edgeCount = edgeCount;
     }
 
     private static Iterable<Vertex> nullIterable = () -> new Iterator<>() {
@@ -78,7 +117,11 @@ public class SimpleGraph implements Graph {
             if (adjacentVertexList.get(startVertex.getNumber()) == null) {
                 adjacentVertexList.set(startVertex.getNumber(), new LinkedList<>());
             }
+            if (adjacentVertexList.get(endVertex.getNumber()) == null){
+                adjacentVertexList.set(endVertex.getNumber(), new LinkedList<>());
+            }
             adjacentVertexList.get(startVertex.getNumber()).add(endVertex);
+            adjacentVertexList.get(endVertex.getNumber()).add(startVertex);
             edgeCount++;
         }
         if (!vertices.contains(startVertex)) {

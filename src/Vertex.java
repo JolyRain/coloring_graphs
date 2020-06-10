@@ -10,6 +10,9 @@ public class Vertex {
         this.number = number;
     }
 
+    private enum Colors {
+        RED, GREEN, BLUE, ORANGE,
+    }
 
     public int getNumber() {
         return number;

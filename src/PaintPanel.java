@@ -4,16 +4,28 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class PaintPanel extends JPanel {
-    private ArrayList<Circle> circles = new ArrayList<>();
+
+    private ArrayList<Node> nodes = new ArrayList<>();
     private ArrayList<Line2D> lines = new ArrayList<>();
     private ModeCreatingVertex modeCreatingVertex = new ModeCreatingVertex();
     private ModeDeleting modeDeleting = new ModeDeleting();
     private ModeConnectingVertex modeConnectingVertex = new ModeConnectingVertex();
+    private SimpleGraph graph = new SimpleGraph();
 
     public PaintPanel() {
         setCreatingMode();
+    }
+
+    public SimpleGraph getGraph() {
+        return graph;
+    }
+
+    public void colorize() {
+        graph.colorize();
+        repaint();
     }
 
     public void paint(Graphics g) {
@@ -21,25 +33,27 @@ public class PaintPanel extends JPanel {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         Graphics2D graphics2D = (Graphics2D) g;
-        graphics2D.setStroke(new BasicStroke(7));
+        graphics2D.setStroke(new BasicStroke(5));
         graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2D.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
-        int counter = 0;
         graphics2D.setColor(Color.BLACK);
         for (Line2D line : lines) {
             graphics2D.draw(line);
         }
-        for (Circle circle : circles) {
-            if (circle.equals(modeConnectingVertex.startCircle)) {
+        for (Node node : nodes) {
+            Circle circle = node.getCircle();
+            Vertex vertex = node.getVertex();
+            if (node.equals(modeConnectingVertex.startNode)) {
                 graphics2D.setColor(Color.RED);
-                graphics2D.draw(circle);
-            }
+            } else graphics2D.setColor(Color.BLACK);
+            graphics2D.draw(circle);
+            if (vertex.getColor() != null) {
+                graphics2D.setColor(vertex.getColor());
+            } else graphics2D.setColor(Color.WHITE);
+            graphics2D.fill(node.getCircle());
             graphics2D.setColor(Color.BLACK);
-            graphics2D.fill(circle);
-            graphics2D.setColor(Color.white);
-            graphics2D.drawString(String.valueOf(counter), (float) (circle.getX() + circle.getWidth() / 3),  //убрать хардкод
-                    (float) (circle.getY() + circle.getHeight() / 1.5));
-            counter++;
+            graphics2D.drawString(String.valueOf(vertex.getNumber()), (float) (circle.getX() + circle.getRADIUS() / 3),  //убрать хардкод
+                    (float) (circle.getY() + circle.getRADIUS() / 1.5));
         }
     }
 
@@ -64,7 +78,10 @@ public class PaintPanel extends JPanel {
     private class ModeCreatingVertex extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent event) {
-            circles.add(new Circle(event.getX(), event.getY()));
+            Vertex newVertex = new Vertex(graph.getVertexCount());
+            graph.addVertex(newVertex);
+            nodes.add(new Node(newVertex, new Circle(event.getX(), event.getY())));
+            graph.getAdjacentVertexList().add(new LinkedList<>());
             repaint();
         }
     }
@@ -72,25 +89,26 @@ public class PaintPanel extends JPanel {
     private class ModeDeleting extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent event) {
-            Circle deletingCircle = null;
+            Node deletingCircle = null;
             ArrayList<Line2D> deletingLines = new ArrayList<>();
-            for (Circle circle : circles) {
-                if (circle.contains(event.getX(), event.getY())) {
-                    deletingCircle = circle;
+            for (Node node : nodes) {
+                if (node.getCircle().contains(event.getX(), event.getY())) {
+                    deletingCircle = node;
                 }
             }
             for (Line2D line : lines) {
                 if (deletingCircle != null) {
-                    if (deletingCircle.contains(line.getX1(), line.getY1()) || deletingCircle.contains(line.getX2(), line.getY2())) {
+                    if (deletingCircle.getCircle().contains(line.getX1(), line.getY1()) ||
+                            deletingCircle.getCircle().contains(line.getX2(), line.getY2())) {
                         deletingLines.add(line);
                     }
                 } else if (line.intersects(event.getX(), event.getY(), 35, 1)) { //basicStroke * 7
-                    System.out.println("yea");
                     deletingLines.add(line);
                 }
             }
+            //сделать нахуй
             deleteLines(deletingLines);
-            circles.remove(deletingCircle);
+            nodes.remove(deletingCircle);
             repaint();
         }
 
@@ -102,24 +120,25 @@ public class PaintPanel extends JPanel {
     }
 
     private class ModeConnectingVertex extends MouseAdapter {
-        Circle startCircle;
+        Node startNode;
         boolean clicked = false;
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            for (Circle circle : circles) {
+            for (Node node : nodes) {
                 if (!clicked) {
-                    if (circle.contains(e.getX(), e.getY())) {
-                        startCircle = circle;
+                    if (node.getCircle().contains(e.getX(), e.getY())) {
+                        startNode = node;
                         clicked = true;
                         break;
                     }
-                } else if (circle.contains(e.getX(), e.getY()) && !startCircle.contains(e.getX(), e.getY())) {
-                    lines.add(new Line2D.Double(startCircle.getX() + startCircle.getRADIUS() / 2,
-                            startCircle.getY() + startCircle.getRADIUS() / 2,
-                            circle.getX() + circle.getRADIUS() / 2,
-                            circle.getY() + circle.getRADIUS() / 2));
-                    startCircle = null;
+                } else if (node.getCircle().contains(e.getX(), e.getY()) && !startNode.getCircle().contains(e.getX(), e.getY())) {
+                    lines.add(new Line2D.Double(startNode.getCircle().getX() + startNode.getCircle().getRADIUS() / 2,
+                            startNode.getCircle().getY() + startNode.getCircle().getRADIUS() / 2,
+                            node.getCircle().getX() + node.getCircle().getRADIUS() / 2,
+                            node.getCircle().getY() + node.getCircle().getRADIUS() / 2));
+                    graph.addEdge(graph.getVertices().get(startNode.getVertex().getNumber()), graph.getVertices().get(node.getVertex().getNumber()));
+                    startNode = null;
                     clicked = false;
                     break;
                 }

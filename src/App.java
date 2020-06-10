@@ -69,12 +69,17 @@ class App {
             graphicPanel.setDeletingMode();
         });
         panel.add(deletingButton);
-
-
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(creatingButton);
         buttonGroup.add(connectingButton);
         buttonGroup.add(deletingButton);
+
+        JButton colorizeButton = new JButton("Раскрасить");
+        colorizeButton.setFont(fontButton);
+        colorizeButton.addActionListener(e -> {
+            graphicPanel.colorize();
+        });
+        panel.add(colorizeButton);
 
         return panel;
     }
