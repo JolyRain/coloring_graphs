@@ -1,4 +1,6 @@
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Реализация графа на основе списков смежности
@@ -9,50 +11,65 @@ public class SimpleGraph implements Graph {
     private int vertexCount = 0;
     private int edgeCount = 0;
     private int chromaticNumber = 0;
+    private Queue<DefaultColors> defaultColors;
 
-    public void addVertex(Vertex vertex){
+    private Queue<DefaultColors> toQueue(DefaultColors[] defaultColors) {
+        return new LinkedList<>(Arrays.asList(defaultColors));
+    }
+
+    private void clearColor(){
+        for (Vertex vertex : vertices) {
+            vertex.setNullColor();
+        }
+    }
+
+    void addVertex(Vertex vertex) {
         vertex.setNumber(vertexCount);
         vertices.add(vertex);
         vertexCount++;
     }
 
-    public void colorize() {
-        ArrayList<Vertex> coloredVertices = new ArrayList<>();
-        this.dfsRecursionImpl(vertices.get(0), vertex -> {
-            countChromaticNumber(coloredVertices, vertex);
-            coloredVertices.add(vertex);
-        });
+    void colorize() {
+        if (vertices.isEmpty() || adjacentVertexList.get(0).isEmpty()) return;
+            defaultColors = toQueue(DefaultColors.values());
+            clearColor();
+            chromaticNumber = 0;
+            this.dfsRecursionImpl(vertices.get(0), vertex -> {
+                if (!isColored(vertex)) countChromaticNumber(vertex);
+            });
+    }
+
+    private boolean isColored(Vertex vertex) {
+        return vertex.getColor() != null;
     }
 
     private boolean isColorAdjacentVertex(Vertex otherColoredVertex) {
         for (Vertex currentVertex : adjacent(otherColoredVertex)) {
             if (currentVertex.getColor() == null) return false;
-            if (currentVertex.getColor().equals(otherColoredVertex.getColor())) {
-                return true;
-            }
+            if (currentVertex.getColor().equals(otherColoredVertex.getColor())) return true;
         }
         return false;
     }
 
-    private void countChromaticNumber(ArrayList<Vertex> coloredVertices, Vertex vertex) {
+    private void countChromaticNumber(Vertex vertex) {
         int bufferChromaticNumber = 0;
-        if (!coloredVertices.isEmpty()) {
-            for (Vertex currentVertex : coloredVertices) {
-                if (isAdjacent(currentVertex, vertex)) {
-                    bufferChromaticNumber++;
-                } else {
-                    vertex.setColor(currentVertex.getColor());
-                    if (!isColorAdjacentVertex(vertex)) break;
-                }
+        for (Vertex currentVertex : vertices) {
+            if (isAdjacent(currentVertex, vertex)) {
+                bufferChromaticNumber++;
+            } else {
+                vertex.setColor(currentVertex.getColor());
+                if (!isColorAdjacentVertex(vertex)) break;
             }
-        } else bufferChromaticNumber++;
+        }
         if (bufferChromaticNumber >= chromaticNumber) {
-            vertex.setColor();
+            if (!defaultColors.isEmpty()) {
+                vertex.setColor(defaultColors.poll());
+            } else vertex.setRandomColor();
             chromaticNumber++;
         }
     }
 
-    public List<List<Vertex>> getAdjacentVertexList() {
+    List<List<Vertex>> getAdjacentVertexList() {
         return adjacentVertexList;
     }
 
@@ -60,7 +77,11 @@ public class SimpleGraph implements Graph {
         this.adjacentVertexList = adjacentVertexList;
     }
 
-    public ArrayList<Vertex> getVertices() {
+    public int getChromaticNumber() {
+        return chromaticNumber;
+    }
+
+    ArrayList<Vertex> getVertices() {
         return vertices;
     }
 
@@ -68,7 +89,7 @@ public class SimpleGraph implements Graph {
         this.vertices = vertices;
     }
 
-    public int getVertexCount() {
+    int getVertexCount() {
         return vertexCount;
     }
 
@@ -117,7 +138,7 @@ public class SimpleGraph implements Graph {
             if (adjacentVertexList.get(startVertex.getNumber()) == null) {
                 adjacentVertexList.set(startVertex.getNumber(), new LinkedList<>());
             }
-            if (adjacentVertexList.get(endVertex.getNumber()) == null){
+            if (adjacentVertexList.get(endVertex.getNumber()) == null) {
                 adjacentVertexList.set(endVertex.getNumber(), new LinkedList<>());
             }
             adjacentVertexList.get(startVertex.getNumber()).add(endVertex);
@@ -148,6 +169,16 @@ public class SimpleGraph implements Graph {
     @Override
     public void removeEdge(Vertex startVertex, Vertex endVertex) {
         edgeCount -= countingRemove(adjacentVertexList.get(startVertex.getNumber()), endVertex);
+    }
+
+    void clear() {
+        adjacentVertexList.clear();
+        defaultColors.clear();
+        defaultColors = toQueue(DefaultColors.values());
+        vertices.clear();
+        vertexCount = 0;
+        edgeCount = 0;
+        chromaticNumber = 0;
     }
 
     @Override

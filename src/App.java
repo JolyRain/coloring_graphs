@@ -76,10 +76,13 @@ class App {
 
         JButton colorizeButton = new JButton("Раскрасить");
         colorizeButton.setFont(fontButton);
-        colorizeButton.addActionListener(e -> {
-            graphicPanel.colorize();
-        });
+        colorizeButton.addActionListener(e -> graphicPanel.colorize());
         panel.add(colorizeButton);
+
+        JButton clearButton = new JButton("Очистить");
+        clearButton.setFont(fontButton);
+        clearButton.addActionListener(e -> graphicPanel.clear());
+        panel.add(clearButton);
 
         return panel;
     }

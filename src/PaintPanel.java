@@ -15,7 +15,7 @@ public class PaintPanel extends JPanel {
     private ModeConnectingVertex modeConnectingVertex = new ModeConnectingVertex();
     private SimpleGraph graph = new SimpleGraph();
 
-    public PaintPanel() {
+    PaintPanel() {
         setCreatingMode();
     }
 
@@ -23,7 +23,14 @@ public class PaintPanel extends JPanel {
         return graph;
     }
 
-    public void colorize() {
+    void clear() {
+        graph.clear();
+        nodes.clear();
+        lines.clear();
+        repaint();
+    }
+
+    void colorize() {
         graph.colorize();
         repaint();
     }
@@ -37,9 +44,18 @@ public class PaintPanel extends JPanel {
         graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics2D.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         graphics2D.setColor(Color.BLACK);
+        paintLines(graphics2D);
+        paintVertices(graphics2D);
+        graphics2D.drawString("Хроматическое число графа: " + graph.getChromaticNumber(), 10, this.getHeight() - 30);
+    }
+
+    private void paintLines(Graphics2D graphics2D){
         for (Line2D line : lines) {
             graphics2D.draw(line);
         }
+    }
+
+    private void paintVertices(Graphics2D graphics2D){
         for (Node node : nodes) {
             Circle circle = node.getCircle();
             Vertex vertex = node.getVertex();
@@ -56,6 +72,7 @@ public class PaintPanel extends JPanel {
                     (float) (circle.getY() + circle.getRADIUS() / 1.5));
         }
     }
+
 
     void setCreatingMode() {
         removeMouseListener(modeConnectingVertex);
@@ -74,6 +91,7 @@ public class PaintPanel extends JPanel {
         removeMouseListener(modeCreatingVertex);
         addMouseListener(modeConnectingVertex);
     }
+
 
     private class ModeCreatingVertex extends MouseAdapter {
         @Override
@@ -132,12 +150,14 @@ public class PaintPanel extends JPanel {
                         clicked = true;
                         break;
                     }
-                } else if (node.getCircle().contains(e.getX(), e.getY()) && !startNode.getCircle().contains(e.getX(), e.getY())) {
+                } else if (node.getCircle().contains(e.getX(), e.getY()) &&
+                        !startNode.getCircle().contains(e.getX(), e.getY())) {
                     lines.add(new Line2D.Double(startNode.getCircle().getX() + startNode.getCircle().getRADIUS() / 2,
                             startNode.getCircle().getY() + startNode.getCircle().getRADIUS() / 2,
                             node.getCircle().getX() + node.getCircle().getRADIUS() / 2,
                             node.getCircle().getY() + node.getCircle().getRADIUS() / 2));
-                    graph.addEdge(graph.getVertices().get(startNode.getVertex().getNumber()), graph.getVertices().get(node.getVertex().getNumber()));
+                    graph.addEdge(graph.getVertices().get(startNode.getVertex().getNumber()),
+                            graph.getVertices().get(node.getVertex().getNumber()));
                     startNode = null;
                     clicked = false;
                     break;

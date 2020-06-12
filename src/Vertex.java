@@ -10,8 +10,39 @@ public class Vertex {
         this.number = number;
     }
 
-    private enum Colors {
-        RED, GREEN, BLUE, ORANGE,
+    public void setColor(DefaultColors defaultColor) {
+        switch (defaultColor) {
+            case PINK:
+                setColor(Color.PINK);
+                break;
+            case GREEN:
+                setColor(Color.GREEN);
+                break;
+            case GRAY:
+                setColor(Color.GRAY);
+                break;
+            case CYAN:
+                setColor(Color.CYAN);
+                break;
+            case RED:
+                setColor(Color.RED);
+                break;
+            case BLUE:
+                setColor(Color.BLUE);
+                break;
+            case ORANGE:
+                setColor(Color.ORANGE);
+                break;
+            case BROWN:
+                setColor(new Color(139, 69, 19));
+                break;
+            case PURPLE:
+                setColor(new Color(128, 0, 128));
+                break;
+            case MAGENTA:
+                setColor(Color.MAGENTA);
+                break;
+        }
     }
 
     public int getNumber() {
@@ -26,13 +57,18 @@ public class Vertex {
         return color;
     }
 
-    public void setColor() {
+    public void setRandomColor() {
         Random random = new Random();
         this.color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 
     public void setColor(Color color) {
+        if (color == null) this.color = null;
         this.color = color;
+    }
+
+    public void setNullColor() {
+         this.color = null;
     }
 
     @Override
