@@ -49,13 +49,13 @@ public class PaintPanel extends JPanel {
         graphics2D.drawString("Хроматическое число графа: " + graph.getChromaticNumber(), 10, this.getHeight() - 30);
     }
 
-    private void paintLines(Graphics2D graphics2D){
+    private void paintLines(Graphics2D graphics2D) {
         for (Line2D line : lines) {
             graphics2D.draw(line);
         }
     }
 
-    private void paintVertices(Graphics2D graphics2D){
+    private void paintVertices(Graphics2D graphics2D) {
         for (Node node : nodes) {
             Circle circle = node.getCircle();
             Vertex vertex = node.getVertex();
@@ -99,7 +99,6 @@ public class PaintPanel extends JPanel {
             Vertex newVertex = new Vertex(graph.getVertexCount());
             graph.addVertex(newVertex);
             nodes.add(new Node(newVertex, new Circle(event.getX(), event.getY())));
-            graph.getAdjacentVertexList().add(new LinkedList<>());
             repaint();
         }
     }
@@ -107,17 +106,17 @@ public class PaintPanel extends JPanel {
     private class ModeDeleting extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent event) {
-            Node deletingCircle = null;
+            Node deletingNode = null;
             ArrayList<Line2D> deletingLines = new ArrayList<>();
             for (Node node : nodes) {
                 if (node.getCircle().contains(event.getX(), event.getY())) {
-                    deletingCircle = node;
+                    deletingNode = node;
                 }
             }
             for (Line2D line : lines) {
-                if (deletingCircle != null) {
-                    if (deletingCircle.getCircle().contains(line.getX1(), line.getY1()) ||
-                            deletingCircle.getCircle().contains(line.getX2(), line.getY2())) {
+                if (deletingNode != null) {
+                    if (deletingNode.getCircle().contains(line.getX1(), line.getY1()) ||
+                            deletingNode.getCircle().contains(line.getX2(), line.getY2())) {
                         deletingLines.add(line);
                     }
                 } else if (line.intersects(event.getX(), event.getY(), 35, 1)) { //basicStroke * 7
@@ -126,7 +125,8 @@ public class PaintPanel extends JPanel {
             }
             //сделать нахуй
             deleteLines(deletingLines);
-            nodes.remove(deletingCircle);
+            nodes.remove(deletingNode);
+            if (deletingNode != null) graph.deleteVertex(deletingNode.getVertex());
             repaint();
         }
 
@@ -150,14 +150,17 @@ public class PaintPanel extends JPanel {
                         clicked = true;
                         break;
                     }
-                } else if (node.getCircle().contains(e.getX(), e.getY()) &&
-                        !startNode.getCircle().contains(e.getX(), e.getY())) {
+                } else if (node.getCircle().contains(e.getX(), e.getY())) {
                     lines.add(new Line2D.Double(startNode.getCircle().getX() + startNode.getCircle().getRADIUS() / 2,
                             startNode.getCircle().getY() + startNode.getCircle().getRADIUS() / 2,
                             node.getCircle().getX() + node.getCircle().getRADIUS() / 2,
                             node.getCircle().getY() + node.getCircle().getRADIUS() / 2));
                     graph.addEdge(graph.getVertices().get(startNode.getVertex().getNumber()),
                             graph.getVertices().get(node.getVertex().getNumber()));
+                    startNode = null;
+                    clicked = false;
+                    break;
+                } else if (startNode.getCircle().contains(e.getX(), e.getY())) {
                     startNode = null;
                     clicked = false;
                     break;
