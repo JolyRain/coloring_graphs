@@ -10,6 +10,9 @@ public class Vertex {
         this.number = number;
     }
 
+    public Vertex(){
+    }
+
     public void setColor(DefaultColors defaultColor) {
         switch (defaultColor) {
             case PINK:

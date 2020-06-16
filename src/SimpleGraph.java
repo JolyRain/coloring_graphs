@@ -5,11 +5,11 @@ import java.util.function.Consumer;
  * Реализация графа на основе списков смежности
  */
 public class SimpleGraph implements Graph {
-    private HashMap<Vertex, List<Vertex>> adjacentVerticesMap = new HashMap<>();
+    private TreeMap<Vertex, List<Vertex>> adjacentVerticesMap = new TreeMap<>(Comparator.comparingInt(Vertex::getNumber));
     private ArrayList<Vertex> vertices = new ArrayList<>();
     private ArrayList<Edge> edges = new ArrayList<>();
-    private int vertexCount = 0;
-    private int edgeCount = 0;
+//    private int vertexCount = 0;
+//    private int edgeCount = 0;
     private int chromaticNumber = 0;
     private Queue<DefaultColors> defaultColors;
 
@@ -74,10 +74,9 @@ public class SimpleGraph implements Graph {
     }
 
     void addVertex(Vertex vertex) {
-        vertex.setNumber(vertexCount);
+        vertex.setNumber(vertices.size());
         adjacentVerticesMap.put(vertex, new LinkedList<>());
         vertices.add(vertex);
-        vertexCount++;
     }
 
 //    private Vertex vertexMaxDegree() {
@@ -157,21 +156,21 @@ public class SimpleGraph implements Graph {
         this.vertices = vertices;
     }
 
-    int getVertexCount() {
-        return vertexCount;
-    }
+//    int getVertexCount() {
+//        return vertices.size();
+//    }
 
-    public void setVertexCount(int vertexCount) {
-        this.vertexCount = vertexCount;
-    }
+//    public void setVertexCount(int vertexCount) {
+//        this.vertexCount = vertexCount;
+//    }
 
-    public int getEdgeCount() {
-        return edgeCount;
-    }
+//    public int getEdgeCount() {
+//        return edges.size();
+//    }
 
-    public void setEdgeCount(int edgeCount) {
-        this.edgeCount = edgeCount;
-    }
+//    public void setEdgeCount(int edgeCount) {
+//        this.edgeCount = edgeCount;
+//    }
 
     @Override
     public void addEdge(Vertex startVertex, Vertex endVertex) {
@@ -184,12 +183,12 @@ public class SimpleGraph implements Graph {
             adjacentVerticesMap.get(startVertex).add(endVertex);
             adjacentVerticesMap.get(endVertex).add(startVertex);
             edges.add(new Edge(startVertex, endVertex));
-            edgeCount++;
+//            edgeCount++;
         }
     }
 
     //исправить баги с иднексами - исправлено
-    public void deleteVertex(Vertex deletingVertex) {
+    public void removeVertex(Vertex deletingVertex) {
         vertices.remove(deletingVertex);
         for (Vertex adjacentVertex : adjacentVerticesMap.get(deletingVertex)) {
             adjacentVerticesMap.get(adjacentVertex).removeIf(currentVertex -> currentVertex.equals(deletingVertex));
@@ -197,7 +196,7 @@ public class SimpleGraph implements Graph {
         edges.removeIf(deletingEdge -> deletingEdge.getStartVertex().equals(deletingVertex) || deletingEdge.getEndVertex().equals(deletingVertex));
         adjacentVerticesMap.remove(deletingVertex);
         recountIndex(deletingVertex);
-        vertexCount--;
+//        vertexCount--;
     }
 
     private void recountIndex(Vertex deletingVertex){
@@ -208,61 +207,47 @@ public class SimpleGraph implements Graph {
         }
     }
 
-    private void findDeletingVertex() {
-
-    }
-
-    private int countingRemove(List<Vertex> adjacentVertexList, Vertex vertex) {
-        int count = 0;
-        if (adjacentVertexList != null) {
-            for (Iterator<Vertex> iterator = adjacentVertexList.iterator(); iterator.hasNext(); ) {
-                if (iterator.next().equals(vertex)) {
-                    iterator.remove();
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
     @Override
     public void removeEdge(Vertex startVertex, Vertex endVertex) {
-        edgeCount -= countingRemove(adjacentVerticesMap.get(startVertex.getNumber()), endVertex);
+        Edge deletingEdge = new Edge(startVertex, endVertex);
+        edges.removeIf(edge -> edge.equals(deletingEdge));
+        adjacentVerticesMap.get(startVertex).removeIf(adjacentVertex -> adjacentVertex.equals(endVertex));
+        adjacentVerticesMap.get(endVertex).removeIf(adjacentVertex -> adjacentVertex.equals(startVertex));
     }
 
     void clear() {
         if (adjacentVerticesMap != null) adjacentVerticesMap.clear();
         if (defaultColors != null) defaultColors.clear();
         if (vertices != null) vertices.clear();
-        vertexCount = 0;
-        edgeCount = 0;
+//        vertexCount = 0;
+//        edgeCount = 0;
         chromaticNumber = 0;
     }
 
     @Override
     public Iterable<Vertex> adjacent(Vertex vertex) {
-        return adjacentVerticesMap.get(vertex) == null ? nullIterable : adjacentVerticesMap.get(vertex);
+        return adjacentVerticesMap.get(vertex);
     }
 
-    private static Iterable<Vertex> nullIterable = () -> new Iterator<>() {
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Vertex next() {
-            return null;
-        }
-    };
+//    private static Iterable<Vertex> nullIterable = () -> new Iterator<>() {
+//        @Override
+//        public boolean hasNext() {
+//            return false;
+//        }
+//
+//        @Override
+//        public Vertex next() {
+//            return null;
+//        }
+//    };
 
     @Override
     public int vertexCount() {
-        return vertexCount;
+        return vertices.size();
     }
 
     @Override
     public int edgeCount() {
-        return edgeCount;
+        return edges.size();
     }
 }
