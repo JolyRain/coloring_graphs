@@ -10,10 +10,10 @@ public class Vertex {
         this.number = number;
     }
 
-    public Vertex(){
+    public Vertex() {
     }
 
-    public void setColor(DefaultColors defaultColor) {
+    void setColor(DefaultColors defaultColor) {
         switch (defaultColor) {
             case PINK:
                 setColor(Color.PINK);
@@ -71,19 +71,24 @@ public class Vertex {
     }
 
     public void setNullColor() {
-         this.color = null;
+        this.color = null;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Vertex vertex = (Vertex) o;
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Vertex vertex = (Vertex) object;
         return number == vertex.number;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(number);
+    }
+
+    @Override
+    public String toString() {
+        return "{" + number + "}";
     }
 }

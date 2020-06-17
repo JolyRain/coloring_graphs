@@ -1,22 +1,30 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 class App {
     private JFrame frame;
     private PaintPanel graphicPanel;
 
-    App() {
+    App() throws ClassNotFoundException, UnsupportedLookAndFeelException,
+            InstantiationException, IllegalAccessException {
         createFrame();
         initElements();
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     }
 
     private void createFrame() {
-        frame = new JFrame("Раскраска графа");
+        frame = new JFrame("Coloring graph");
         frame.setSize(1280, 720);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
-        frame.setResizable(false);
+        frame.setResizable(true);
     }
 
     void show() {
@@ -24,66 +32,90 @@ class App {
     }
 
     private void initElements() {
-        JPanel panel = createLeftPanel();
-        panel.setBounds(0, 0, 250, frame.getHeight());
+        JPanel leftPanel = createLeftPanel();
+        leftPanel.setBounds(0, 0, 250, frame.getHeight());
         graphicPanel = new PaintPanel();
         graphicPanel.setLayout(null);
-        JScrollPane scrollPanel = new JScrollPane(graphicPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scrollPanel.setBounds(250, 0, frame.getWidth() - 250, frame.getHeight());
-        frame.add(scrollPanel);
-        frame.add(panel);
+        graphicPanel.setBounds(250, 0, frame.getWidth() - 250, frame.getHeight() - 30);
+        frame.add(graphicPanel);
+        frame.add(leftPanel);
     }
 
     private JPanel createLeftPanel() {
         JPanel panel = new JPanel();
-        Font font = new Font(Font.SANS_SERIF, Font.BOLD, 20);
         Font fontButton = new Font(Font.SANS_SERIF, Font.BOLD, 18);
 
-//        JLabel title = new JLabel("Раскраска графа");
-////        title.setBounds(10, 10, 100, 50);
-//        title.setFont(font);
-//        panel.add(title);
-
-
-
-        JRadioButton creatingButton = new JRadioButton("Режим создания вершин", true);
-//        creatingButton.setBounds(10, 100, 100, 50);
+        JRadioButton creatingButton = new JRadioButton("Create vertex", true);
         creatingButton.setFont(fontButton);
-        creatingButton.addActionListener(e -> {
-            graphicPanel.setCreatingMode();
-        });
+        creatingButton.addActionListener(e -> graphicPanel.setCreatingMode());
         panel.add(creatingButton);
-        JRadioButton connectingButton = new JRadioButton("Режим присоединения", false);
-//        creatingButton.setBounds(10, 100, 100, 50);
+
+        JRadioButton connectingButton = new JRadioButton("Connect vertex", false);
         connectingButton.setFont(fontButton);
-        connectingButton.addActionListener(e -> {
-            graphicPanel.setModeConnecting();
-        });
+        connectingButton.addActionListener(e -> graphicPanel.setModeConnecting());
         panel.add(connectingButton);
-        JRadioButton deletingButton = new JRadioButton("Режим удаления", false);
-//        creatingButton.setBounds(10, 100, 100, 50);
+
+        JRadioButton deletingButton = new JRadioButton("Deleting mode", false);
         deletingButton.setFont(fontButton);
-        deletingButton.addActionListener(e -> {
-            graphicPanel.setDeletingMode();
-        });
+        deletingButton.addActionListener(e -> graphicPanel.setDeletingMode());
         panel.add(deletingButton);
+
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(creatingButton);
         buttonGroup.add(connectingButton);
         buttonGroup.add(deletingButton);
 
-        JButton colorizeButton = new JButton("Раскрасить");
+        JButton colorizeButton = new JButton("Colorize");
         colorizeButton.setFont(fontButton);
         colorizeButton.addActionListener(e -> graphicPanel.colorize());
         panel.add(colorizeButton);
 
-        JButton clearButton = new JButton("Очистить");
+        JButton clearButton = new JButton("Clear");
         clearButton.setFont(fontButton);
         clearButton.addActionListener(e -> graphicPanel.clear());
         panel.add(clearButton);
 
+        JButton saveButton = new JButton("Save image");
+        saveButton.setFont(fontButton);
+        saveButton.addActionListener(e -> saveImage());
+        panel.add(saveButton);
+
+        JButton button = new JButton("Save");
+        button.setFont(fontButton);
+        button.addActionListener(e -> graphicPanel.saveToFile());
+        panel.add(button);
+
         return panel;
+    }
+
+    private void saveImage() {
+        FileFilter filter = new FileNameExtensionFilter("Image", "png");
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("./src/images"));
+        fileChooser.addChoosableFileFilter(filter);
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            saveImageGraph(fileChooser.getSelectedFile().getAbsolutePath());
+        }
+    }
+
+    private void saveImageGraph(String fileName) {
+        BufferedImage image = (BufferedImage) graphicPanel.createImage(graphicPanel.getWidth(), graphicPanel.getHeight());
+        Graphics2D g2 = image.createGraphics();
+        graphicPanel.paint(g2);
+        g2.dispose();
+        try {
+            ImageIO.write(image, "png", new File(checkFileName(fileName)));
+        } catch (IOException io) {
+            JOptionPane.showMessageDialog(null, "Error!!!",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String checkFileName(String fileName) {
+        if (!fileName.endsWith(".png")) {
+            fileName += ".png";
+        }
+        return fileName;
     }
 }

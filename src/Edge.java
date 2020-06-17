@@ -13,29 +13,26 @@ public class Edge {
         return startVertex;
     }
 
-    public void setStartVertex(Vertex startVertex) {
-        this.startVertex = startVertex;
-    }
-
     public Vertex getEndVertex() {
         return endVertex;
     }
 
-    public void setEndVertex(Vertex endVertex) {
-        this.endVertex = endVertex;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Edge edge = (Edge) o;
-        return startVertex.equals(edge.startVertex) &&
-                endVertex.equals(edge.endVertex);
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        Edge edge = (Edge) object;
+        return (startVertex.equals(edge.startVertex) && endVertex.equals(edge.endVertex)) ||
+                (startVertex.equals(edge.endVertex) && endVertex.equals(edge.startVertex));
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(startVertex, endVertex);
+    }
+
+    @Override
+    public String toString() {
+        return "<" + startVertex + ", " + endVertex + ">";
     }
 }

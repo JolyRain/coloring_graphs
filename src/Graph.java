@@ -1,217 +1,138 @@
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * Интерфейс для описания неориентированного графа (н-графа)
- * с реализацией некоторых методов графа
- */
-public interface Graph {
-    /**
-     * Кол-во вершин в графе
-     *
-     * @return
-     */
-    int vertexCount();
+public class Graph {
+    private TreeMap<Vertex, List<Vertex>> adjacentVerticesMap = new TreeMap<>(Comparator.comparingInt(Vertex::getNumber));
+    private List<Vertex> vertices = new LinkedList<>();
+    private List<Edge> edges = new LinkedList<>();
+    private Queue<DefaultColors> defaultColors;
+    private int chromaticNumber = 0;
 
-    /**
-     * Кол-во ребер в графе
-     *
-     * @return
-     */
-    int edgeCount();
+    private void colorizer(Consumer<Vertex> visitor) {
+        for (Vertex currentVertex : vertices) {
+            visitor.accept(currentVertex);
+        }
+    }
 
-    /**
-     * Добавление ребра между вершинами с номерами startVertex и endVertex
-     *
-     * @param startVertex
-     * @param endVertex
-     */
-    void addEdge(Vertex startVertex, Vertex endVertex);
+    public void colorize() {
+        if (vertices.isEmpty()) return;
+        defaultColors = toQueue(DefaultColors.values());
+        clearColor();
+        chromaticNumber = 0;
+        colorizer(vertex -> {
+            if (!isColored(vertex)) colorizeVertex(vertex);
+        });
+    }
 
-    /**
-     * Удаление ребра/ребер между вершинами с номерами startVertex и endVertex
-     *
-     * @param startVertex
-     * @param endVertex
-     */
-    void removeEdge(Vertex startVertex, Vertex endVertex);
+    private void colorizeVertex(Vertex vertex) {
+        int bufferChromaticNumber = 0;
+        for (Vertex currentVertex : vertices) {
+            if (currentVertex.equals(vertex)) continue;
+            if (isAdjacent(currentVertex, vertex)) bufferChromaticNumber++;
+            else {
+                vertex.setColor(currentVertex.getColor());
+                if (!isColorOfAdjacentVertex(vertex)) break;
+            }
+        }
+        if (bufferChromaticNumber >= chromaticNumber) {
+            setVertexColor(vertex);
+            chromaticNumber++;
+        }
+    }
 
-    /**
-     * @param vertex Номер вершины, смежные с которой необходимо найти
-     * @return Объект, поддерживающий итерацию по номерам связанных с vertex вершин
-     */
-    Iterable<Vertex> adjacent(Vertex vertex);
+    private void setVertexColor(Vertex vertex) {
+        if (!defaultColors.isEmpty()) vertex.setColor(defaultColors.poll());
+        else vertex.setRandomColor();
+    }
 
-    /**
-     * Проверка смежности двух вершин
-     *
-     * @param startVertex
-     * @param endVertex
-     * @return
-     */
-    default boolean isAdjacent(Vertex startVertex, Vertex endVertex) {
-        for (Vertex adjacent : adjacent(startVertex)) {
-            if (adjacent.equals(endVertex)) {
+    private Queue<DefaultColors> toQueue(DefaultColors[] defaultColors) {
+        return new LinkedList<>(Arrays.asList(defaultColors));
+    }
+
+    private void clearColor() {
+        for (Vertex vertex : vertices) {
+            vertex.setNullColor();
+        }
+    }
+
+    private boolean isColored(Vertex vertex) {
+        return vertex.getColor() != null;
+    }
+
+    private boolean isColorOfAdjacentVertex(Vertex coloredVertex) {
+        for (Vertex adjacentVertex : adjacent(coloredVertex)) {
+            if (adjacentVertex.getColor() == null) return false;
+            if (adjacentVertex.getColor().equals(coloredVertex.getColor())) return true;
+        }
+        return false;
+    }
+
+    void addVertex(Vertex vertex) {
+        vertex.setNumber(vertices.size());
+        adjacentVerticesMap.put(vertex, new LinkedList<>());
+        vertices.add(vertex);
+    }
+
+    private boolean isAdjacent(Vertex firstVertex, Vertex secondVertex) {
+        for (Vertex adjacent : adjacent(firstVertex)) {
+            if (adjacent.equals(secondVertex)) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Поиск в глубину, реализованный рекурсивно
-     * (начальная вершина также включена)
-     *
-     * @param startVertex Вершина, с которой начинается поиск
-     * @param visitor     Посетитель
-     */
-    default void dfsRecursionImpl(Vertex startVertex, Consumer<Vertex> visitor) {
-        boolean[] visited = new boolean[vertexCount()];
-
-        class Inner {
-            private void visit(Vertex currentVertex) {
-                visitor.accept(currentVertex);
-                visited[currentVertex.getNumber()] = true;
-                for (Vertex adjacentVertex : adjacent(currentVertex)) {
-                    if (!visited[adjacentVertex.getNumber()]) {
-                        visit(adjacentVertex);
-                    }
-                }
-            }
+    public void addEdge(Vertex startVertex, Vertex endVertex) {
+        if (!isAdjacent(startVertex, endVertex)) {
+            adjacentVerticesMap.get(startVertex).add(endVertex);
+            adjacentVerticesMap.get(endVertex).add(startVertex);
+            edges.add(new Edge(startVertex, endVertex));
         }
-        new Inner().visit(startVertex);
     }
 
-    /**
-     * Поиск в глубину, реализованный с помощью стека
-     * (не совсем "правильный"/классический, т.к. "в глубину" реализуется только "план" обхода, а не сам обход)
-     *
-     * @param startVertex Вершина, с которой начинается поиск
-     * @param visitor     Посетитель
-     */
-    default void dfsStackImpl(Vertex startVertex, Consumer<Vertex> visitor) {
-        boolean[] visited = new boolean[vertexCount()];
-        Stack<Vertex> stack = new Stack<>();
-        stack.push(startVertex);
-        visited[startVertex.getNumber()] = true;
-        while (!stack.empty()) {
-            Vertex currentVertex = stack.pop();
-            visitor.accept(currentVertex);
-            for (Vertex vertex : adjacent(currentVertex)) {
-                if (!visited[vertex.getNumber()]) {
-                    stack.push(vertex);
-                    visited[vertex.getNumber()] = true;
-                }
+    public void removeVertex(Vertex deletingVertex) {
+        vertices.remove(deletingVertex);
+        for (Vertex adjacentVertex : adjacentVerticesMap.get(deletingVertex)) {
+            List<Vertex> adjacentVertices = adjacentVerticesMap.get(adjacentVertex);
+            adjacentVertices.removeIf(currentVertex -> currentVertex.equals(deletingVertex));
+        }
+        edges.removeIf(deletingEdge -> deletingEdge.getStartVertex().equals(deletingVertex) ||
+                deletingEdge.getEndVertex().equals(deletingVertex));
+        adjacentVerticesMap.remove(deletingVertex);
+        recountIndex(deletingVertex);
+    }
+
+    private void recountIndex(Vertex deletingVertex) {
+        for (Vertex currentVertex : vertices) {
+            if (deletingVertex.getNumber() < currentVertex.getNumber()) {
+                currentVertex.setNumber(currentVertex.getNumber() - 1);
             }
         }
     }
 
-    /**
-     * Поиск в ширину, реализованный с помощью очереди
-     * (начальная вершина также включена)
-     *
-     * @param startVertex Вершина, с которой начинается поиск
-     * @param visitor     Посетитель
-     */
-    default void bfsQueueImpl(Vertex startVertex, Consumer<Vertex> visitor) {
-        boolean[] visited = new boolean[vertexCount()];
-        Queue<Vertex> queue = new LinkedList<>();
-        queue.add(startVertex);
-        visited[startVertex.getNumber()] = true;
-        while (queue.size() > 0) {
-            Vertex currentVertex = queue.remove();
-            visitor.accept(currentVertex);
-            for (Vertex vertex : adjacent(currentVertex)) {
-                if (!visited[vertex.getNumber()]) {
-                    queue.add(vertex);
-                    visited[vertex.getNumber()] = true;
-                }
-            }
-        }
+    public void removeEdge(Vertex startVertex, Vertex endVertex) {
+        Edge deletingEdge = new Edge(startVertex, endVertex);
+        edges.removeIf(edge -> edge.equals(deletingEdge));
+        adjacentVerticesMap.get(startVertex).removeIf(adjacentVertex -> adjacentVertex.equals(endVertex));
+        adjacentVerticesMap.get(endVertex).removeIf(adjacentVertex -> adjacentVertex.equals(startVertex));
     }
 
-    /**
-     * Поиск в глубину в виде итератора
-     * (начальная вершина также включена)
-     *
-     * @param startVertex Вершина, с которой начинается поиск
-     * @return Итератор
-     */
-    default Iterable<Vertex> dfs(Vertex startVertex) {
-        return new Iterable<>() {
-            private Stack<Vertex> stack = null;
-            private boolean[] visited = null;
-
-            @Override
-            public Iterator<Vertex> iterator() {
-                stack = new Stack<>();
-                stack.push(startVertex);
-                visited = new boolean[Graph.this.vertexCount()];
-                visited[startVertex.getNumber()] = true;
-
-                return new Iterator<>() {
-                    @Override
-                    public boolean hasNext() {
-                        return !stack.isEmpty();
-                    }
-
-                    @Override
-                    public Vertex next() {
-                        Vertex result = stack.pop();
-                        for (Vertex adjacent : Graph.this.adjacent(result)) {
-                            if (!visited[adjacent.getNumber()]) {
-                                visited[adjacent.getNumber()] = true;
-                                stack.add(adjacent);
-                            }
-                        }
-                        return result;
-                    }
-                };
-            }
-        };
+    void clear() {
+        if (adjacentVerticesMap != null) adjacentVerticesMap.clear();
+        if (defaultColors != null) defaultColors.clear();
+        if (vertices != null) vertices.clear();
+        chromaticNumber = 0;
     }
 
-    /**
-     * Поиск в ширину в виде итератора
-     * (начальная вершина также включена)
-     *
-     * @param startVertex Вершина, с которой начинается поиск
-     * @return Итератор
-     */
-    default Iterable<Vertex> bfs(Vertex startVertex) {
-        return new Iterable<>() {
-            private Queue<Vertex> queue = null;
-            private boolean[] visited = null;
+    public Iterable<Vertex> adjacent(Vertex vertex) {
+        return adjacentVerticesMap.get(vertex);
+    }
 
-            @Override
-            public Iterator<Vertex> iterator() {
-                queue = new LinkedList<>();
-                queue.add(startVertex);
-                visited = new boolean[Graph.this.vertexCount()];
-                visited[startVertex.getNumber()] = true;
+    public int getChromaticNumber() {
+        return chromaticNumber;
+    }
 
-                return new Iterator<Vertex>() {
-                    @Override
-                    public boolean hasNext() {
-                        return !queue.isEmpty();
-                    }
-
-                    @Override
-                    public Vertex next() {
-                        Vertex result = queue.remove();
-                        for (Vertex adjacentVertex : Graph.this.adjacent(result)) {
-                            if (!visited[adjacentVertex.getNumber()]) {
-                                visited[adjacentVertex.getNumber()] = true;
-                                queue.add(adjacentVertex);
-                            }
-                        }
-                        return result;
-                    }
-                };
-            }
-        };
+    public TreeMap<Vertex, List<Vertex>> getAdjacentVerticesMap() {
+        return adjacentVerticesMap;
     }
 }

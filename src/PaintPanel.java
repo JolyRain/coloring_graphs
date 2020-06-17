@@ -3,24 +3,39 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 public class PaintPanel extends JPanel {
-
-    private ArrayList<Node> nodes = new ArrayList<>();
-    private ArrayList<Line> lines = new ArrayList<>();
+    private static final Font FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 15);
+    private static final int LINE_WIDTH = 5;
+    private List<Node> nodes = new LinkedList<>();
+    private List<Line> lines = new LinkedList<>();
     private CreatingVertexMode creatingVertexMode = new CreatingVertexMode();
     private DeletingMode deletingMode = new DeletingMode();
     private ConnectingVertexMode connectingVertexMode = new ConnectingVertexMode();
-    private SimpleGraph graph = new SimpleGraph();
+    private Graph graph = new Graph();
 
     PaintPanel() {
         setCreatingMode();
     }
 
-//    public SimpleGraph getGraph() {
-//        return graph;
-//    }
+    public void paint(Graphics graphics) {
+        graphics.setColor(Color.BLACK);
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
+        Graphics2D graphics2D = (Graphics2D) graphics;
+        graphics2D.setStroke(new BasicStroke(LINE_WIDTH));
+        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics2D.setFont(FONT);
+        graphics2D.setColor(Color.BLACK);
+        paintLines(graphics2D);
+        paintVertices(graphics2D);
+        graphics2D.drawString("Chromatic number: " + graph.getChromaticNumber(), 10, this.getHeight() - 30);
+    }
 
     void clear() {
         graph.clear();
@@ -34,20 +49,6 @@ public class PaintPanel extends JPanel {
         repaint();
     }
 
-    public void paint(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, this.getWidth(), this.getHeight());
-        Graphics2D graphics2D = (Graphics2D) g;
-        graphics2D.setStroke(new BasicStroke(5));
-        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics2D.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
-        graphics2D.setColor(Color.BLACK);
-        paintLines(graphics2D);
-        paintVertices(graphics2D);
-        graphics2D.drawString("Хроматическое число графа: " + graph.getChromaticNumber(), 10, this.getHeight() - 30);
-    }
-
     private void paintLines(Graphics2D graphics2D) {
         for (Line line : lines) {
             graphics2D.draw(line.getLine());
@@ -55,23 +56,21 @@ public class PaintPanel extends JPanel {
     }
 
     private void paintVertices(Graphics2D graphics2D) {
+        Circle circle;
+        Vertex vertex;
         for (Node node : nodes) {
-            Circle circle = node.getCircle();
-            Vertex vertex = node.getVertex();
-            if (node.equals(connectingVertexMode.startNode)) {
-                graphics2D.setColor(Color.RED);
-            } else graphics2D.setColor(Color.BLACK);
+            circle = node.getCircle();
+            vertex = node.getVertex();
+            if (node.equals(connectingVertexMode.startNode)) graphics2D.setColor(Color.RED);
+            else graphics2D.setColor(Color.BLACK);
             graphics2D.draw(circle);
-            if (vertex.getColor() != null) {
-                graphics2D.setColor(vertex.getColor());
-            } else graphics2D.setColor(Color.WHITE);
+            if (vertex.getColor() != null) graphics2D.setColor(vertex.getColor());
+            else graphics2D.setColor(Color.WHITE);
             graphics2D.fill(node.getCircle());
             graphics2D.setColor(Color.BLACK);
-            graphics2D.drawString(String.valueOf(vertex.getNumber()), (float) (circle.getX() + circle.getRADIUS() / 3),  //убрать хардкод
-                    (float) (circle.getY() + circle.getRADIUS() / 1.5));
+            graphics2D.drawString(String.valueOf(vertex.getNumber()), node.getNumberX(), node.getNumberY());
         }
     }
-
 
     void setCreatingMode() {
         removeMouseListener(connectingVertexMode);
@@ -91,6 +90,30 @@ public class PaintPanel extends JPanel {
         addMouseListener(connectingVertexMode);
     }
 
+    public void saveToFile() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Node node : nodes) {
+            stringBuilder.append(node).append(graph.getAdjacentVerticesMap().get(node.getVertex()));
+            stringBuilder.append("\n");
+        }
+        for (Line line : lines) {
+            stringBuilder.append(line);
+            stringBuilder.append("\n");
+        }
+        System.out.println(stringBuilder.toString());
+    }
+
+    public void readGraphFromFile(String stringIn) {
+        Pattern patternNode = Pattern.compile("^Node:\\s\\{(\\d)+}\\s\\(\\d*\\.\\d*,\\s\\d*\\.\\d*\\)\\s\\[(\\{\\d*}|(, ))*]$");
+        Pattern patternEdge = Pattern.compile("^Edge:\\s<\\{\\d*},\\s\\{\\d*}>$");
+        Scanner scanFile = new Scanner(stringIn);
+        while (scanFile.hasNextLine()) {
+            String string = scanFile.nextLine();
+            if (string.matches(patternNode.pattern())) {
+                System.out.println("ok!");
+            }
+        }
+    }
 
     private class CreatingVertexMode extends MouseAdapter {
         @Override
@@ -103,11 +126,13 @@ public class PaintPanel extends JPanel {
     }
 
     private class DeletingMode extends MouseAdapter {
+        Node deletingNode = null;
+        Line deletingLine = null;
+        boolean vertexClicked = false;
+        List<Line> deletingLines = new LinkedList<>();
+
         @Override
         public void mouseClicked(MouseEvent event) {
-            Node deletingNode = null;
-            boolean vertexClicked = false;
-            ArrayList<Line> deletingLines = new ArrayList<>();
             for (Node node : nodes) {
                 if (node.getCircle().contains(event.getX(), event.getY())) {
                     deletingNode = node;
@@ -116,66 +141,95 @@ public class PaintPanel extends JPanel {
             }
             for (Line line : lines) {
                 if (vertexClicked) {
-                    if (deletingNode.getCircle().contains(line.getLine().getX1(), line.getLine().getY1()) ||
-                            deletingNode.getCircle().contains(line.getLine().getX2(), line.getLine().getY2())) {
-                        deletingLines.add(line);
-                    }
-                } else if (line.getLine().intersects(event.getX(), event.getY(), 35, 1)) { //basicStroke * 7
-                    deletingLines.add(line);
-                }
+                    if (containsLine(deletingNode, line)) deletingLines.add(line);
+                } else if (line.getLine().intersects(event.getX(), event.getY(), 35, 1)) deletingLine = line;
             }
-            //сделать нахуй
-            if (vertexClicked) {
-                graph.removeVertex(deletingNode.getVertex());
-                nodes.remove(deletingNode);
-                deleteLines(deletingLines);
-            } else {
-                graph.removeEdge(deletingLines.get(0).getEdge().getStartVertex(), deletingLines.get(0).getEdge().getEndVertex());
-                deleteLines(deletingLines);
-            }
+            if (vertexClicked) removeNode();
+            else if (deletingLine != null) removeLine();
             repaint();
+            clear();
         }
 
-        private void deleteLines(ArrayList<Line> deletingLines) {
+        private void clear() {
+            deletingNode = null;
+            deletingLine = null;
+            deletingLines.clear();
+            vertexClicked = false;
+        }
+
+        private void removeNode() {
+            graph.removeVertex(deletingNode.getVertex());
+            nodes.remove(deletingNode);
+            deleteLines(deletingLines);
+        }
+
+        private void removeLine() {
+            graph.removeEdge(deletingLine.getEdge().getStartVertex(), deletingLine.getEdge().getEndVertex());
+            lines.remove(deletingLine);
+        }
+
+        private void deleteLines(List<Line> deletingLines) {
             for (Line line : deletingLines) {
                 lines.remove(line);
             }
+        }
+
+        private boolean containsLine(Node node, Line line) {
+            return node.getCircle().contains(line.getLine().getX1(), line.getLine().getY1()) ||
+                    node.getCircle().contains(line.getLine().getX2(), line.getLine().getY2());
         }
     }
 
     private class ConnectingVertexMode extends MouseAdapter {
         Node startNode;
         Line newLine;
-        boolean clicked = false;
+        boolean vertexClicked = false;
 
         @Override
         public void mouseClicked(MouseEvent e) {
             for (Node node : nodes) {
-                if (!clicked) {
+                if (!vertexClicked) {
                     if (node.getCircle().contains(e.getX(), e.getY())) {
                         startNode = node;
-                        clicked = true;
+                        vertexClicked = true;
                         break;
                     }
-                } else if (node.getCircle().contains(e.getX(), e.getY())) {
-                    newLine = new Line(new Line2D.Double(startNode.getCircle().getX() + startNode.getCircle().getRADIUS() / 2,
-                            startNode.getCircle().getY() + startNode.getCircle().getRADIUS() / 2,
-                            node.getCircle().getX() + node.getCircle().getRADIUS() / 2,
-                            node.getCircle().getY() + node.getCircle().getRADIUS() / 2), new Edge(startNode.getVertex(), node.getVertex()));
-                            lines.add(newLine);
-                    graph.addEdge(startNode.getVertex(), node.getVertex());
-                    startNode = null;
-                    newLine = null;
-                    clicked = false;
-                    break;
                 } else if (startNode.getCircle().contains(e.getX(), e.getY())) {
-                    startNode = null;
-                    newLine = null;
-                    clicked = false;
+                    clear();
+                    break;
+                } else if (node.getCircle().contains(e.getX(), e.getY())) {
+                    setNewLine(node);
+                    lines.add(newLine);
+                    graph.addEdge(startNode.getVertex(), node.getVertex());
+                    clear();
                     break;
                 }
             }
             repaint();
         }
+
+        private void setNewLine(Node node) {
+            Circle circleStart = startNode.getCircle();
+            Circle circleEnd = node.getCircle();
+            double radius = toHalve(circleStart.getRADIUS());
+            newLine = new Line(new Line2D.Double(
+                    circleStart.getX() + radius,
+                    circleStart.getY() + radius,
+                    circleEnd.getX() + radius,
+                    circleEnd.getY() + radius),
+                    new Edge(startNode.getVertex(), node.getVertex()));
+        }
+
+        private double toHalve(double value) {
+            UnaryOperator<Double> operator = number -> number / 2.0;
+            return operator.apply(value);
+        }
+
+        private void clear() {
+            startNode = null;
+            newLine = null;
+            vertexClicked = false;
+        }
     }
 }
+

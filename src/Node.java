@@ -7,19 +7,24 @@ public class Node {
         this.circle = circle;
     }
 
-    public Vertex getVertex() {
-        return vertex;
+    public float getNumberX() {
+        return (float) (circle.getX() + circle.getRADIUS() / 3.0);
     }
 
-    public void setVertex(Vertex vertex) {
-        this.vertex = vertex;
+    public float getNumberY() {
+        return (float) (circle.getY() + circle.getRADIUS() / 1.5);
+    }
+
+    public Vertex getVertex() {
+        return vertex;
     }
 
     public Circle getCircle() {
         return circle;
     }
 
-    public void setCircle(Circle circle) {
-        this.circle = circle;
+    @Override
+    public String toString() {
+        return "Node: " + vertex.toString() + " (" + circle.getX() + ", " + circle.getY() + ") ";
     }
 }
