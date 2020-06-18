@@ -6,12 +6,12 @@ public class Circle extends Ellipse2D.Double {
     private double x;
     private double y;
 
-    public Circle(double x, double y) {
+    Circle(double x, double y) {
         this.x = x - RADIUS / 2;
         this.y = y - RADIUS / 2;
     }
 
-    public double getRADIUS() {
+    double getRADIUS() {
         return RADIUS;
     }
 

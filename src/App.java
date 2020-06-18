@@ -8,23 +8,27 @@ import java.io.File;
 import java.io.IOException;
 
 class App {
+    private static final int WIDTH = 1280;
+    private static final int HEIGHT = 720;
+    private static final int ZERO = 0;
+    private static final int LEFT_PANEL_WIDTH = 250;
+    private static final Font FONT_BUTTON = new Font(Font.SANS_SERIF, Font.BOLD, 18);
     private JFrame frame;
-    private PaintPanel graphicPanel;
+    private PaintGraphPanel graphicPanel;
+    private JPanel leftPanel;
 
-    App() throws ClassNotFoundException, UnsupportedLookAndFeelException,
-            InstantiationException, IllegalAccessException {
+    App()  {
         createFrame();
         initElements();
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     }
 
     private void createFrame() {
         frame = new JFrame("Coloring graph");
-        frame.setSize(1280, 720);
+        frame.setSize(WIDTH, HEIGHT);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
-        frame.setResizable(true);
+        frame.setResizable(false);
     }
 
     void show() {
@@ -32,33 +36,31 @@ class App {
     }
 
     private void initElements() {
-        JPanel leftPanel = createLeftPanel();
-        leftPanel.setBounds(0, 0, 250, frame.getHeight());
-        graphicPanel = new PaintPanel();
+        createLeftPanel();
+        leftPanel.setBounds(ZERO, ZERO, LEFT_PANEL_WIDTH, frame.getHeight());
+        graphicPanel = new PaintGraphPanel();
         graphicPanel.setLayout(null);
-        graphicPanel.setBounds(250, 0, frame.getWidth() - 250, frame.getHeight() - 30);
+        graphicPanel.setBounds(LEFT_PANEL_WIDTH, ZERO, WIDTH - LEFT_PANEL_WIDTH, HEIGHT);
         frame.add(graphicPanel);
         frame.add(leftPanel);
     }
 
-    private JPanel createLeftPanel() {
-        JPanel panel = new JPanel();
-        Font fontButton = new Font(Font.SANS_SERIF, Font.BOLD, 18);
-
+    private void createLeftPanel() {
+        leftPanel = new JPanel();
         JRadioButton creatingButton = new JRadioButton("Create vertex", true);
-        creatingButton.setFont(fontButton);
+        creatingButton.setFont(FONT_BUTTON);
         creatingButton.addActionListener(e -> graphicPanel.setCreatingMode());
-        panel.add(creatingButton);
+        leftPanel.add(creatingButton);
 
         JRadioButton connectingButton = new JRadioButton("Connect vertex", false);
-        connectingButton.setFont(fontButton);
+        connectingButton.setFont(FONT_BUTTON);
         connectingButton.addActionListener(e -> graphicPanel.setModeConnecting());
-        panel.add(connectingButton);
+        leftPanel.add(connectingButton);
 
         JRadioButton deletingButton = new JRadioButton("Deleting mode", false);
-        deletingButton.setFont(fontButton);
+        deletingButton.setFont(FONT_BUTTON);
         deletingButton.addActionListener(e -> graphicPanel.setDeletingMode());
-        panel.add(deletingButton);
+        leftPanel.add(deletingButton);
 
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(creatingButton);
@@ -66,26 +68,19 @@ class App {
         buttonGroup.add(deletingButton);
 
         JButton colorizeButton = new JButton("Colorize");
-        colorizeButton.setFont(fontButton);
+        colorizeButton.setFont(FONT_BUTTON);
         colorizeButton.addActionListener(e -> graphicPanel.colorize());
-        panel.add(colorizeButton);
+        leftPanel.add(colorizeButton);
 
         JButton clearButton = new JButton("Clear");
-        clearButton.setFont(fontButton);
+        clearButton.setFont(FONT_BUTTON);
         clearButton.addActionListener(e -> graphicPanel.clear());
-        panel.add(clearButton);
+        leftPanel.add(clearButton);
 
         JButton saveButton = new JButton("Save image");
-        saveButton.setFont(fontButton);
+        saveButton.setFont(FONT_BUTTON);
         saveButton.addActionListener(e -> saveImage());
-        panel.add(saveButton);
-
-        JButton button = new JButton("Save");
-        button.setFont(fontButton);
-        button.addActionListener(e -> graphicPanel.saveToFile());
-        panel.add(button);
-
-        return panel;
+        leftPanel.add(saveButton);
     }
 
     private void saveImage() {
@@ -100,12 +95,13 @@ class App {
     }
 
     private void saveImageGraph(String fileName) {
-        BufferedImage image = (BufferedImage) graphicPanel.createImage(graphicPanel.getWidth(), graphicPanel.getHeight());
-        Graphics2D g2 = image.createGraphics();
-        graphicPanel.paint(g2);
-        g2.dispose();
+        BufferedImage imageGraph = (BufferedImage)
+                graphicPanel.createImage(graphicPanel.getWidth(), graphicPanel.getHeight());
+        Graphics2D graphics2D = imageGraph.createGraphics();
+        graphicPanel.paint(graphics2D);
+        graphics2D.dispose();
         try {
-            ImageIO.write(image, "png", new File(checkFileName(fileName)));
+            ImageIO.write(imageGraph, "png", new File(checkFileName(fileName)));
         } catch (IOException io) {
             JOptionPane.showMessageDialog(null, "Error!!!",
                     "Error", JOptionPane.ERROR_MESSAGE);

@@ -4,16 +4,16 @@ public class Edge {
     private Vertex startVertex;
     private Vertex endVertex;
 
-    public Edge(Vertex startVertex, Vertex endVertex) {
+    Edge(Vertex startVertex, Vertex endVertex) {
         this.startVertex = startVertex;
         this.endVertex = endVertex;
     }
 
-    public Vertex getStartVertex() {
+    Vertex getStartVertex() {
         return startVertex;
     }
 
-    public Vertex getEndVertex() {
+    Vertex getEndVertex() {
         return endVertex;
     }
 

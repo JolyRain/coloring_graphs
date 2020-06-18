@@ -6,11 +6,7 @@ public class Vertex {
     private int number;
     private Color color;
 
-    public Vertex(int number) {
-        this.number = number;
-    }
-
-    public Vertex() {
+    Vertex() {
     }
 
     void setColor(DefaultColors defaultColor) {
@@ -48,29 +44,29 @@ public class Vertex {
         }
     }
 
-    public int getNumber() {
+    int getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    void setNumber(int number) {
         this.number = number;
     }
 
-    public Color getColor() {
+    Color getColor() {
         return color;
     }
 
-    public void setRandomColor() {
+    void setRandomColor() {
         Random random = new Random();
         this.color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 
-    public void setColor(Color color) {
+    void setColor(Color color) {
         if (color == null) this.color = null;
         this.color = color;
     }
 
-    public void setNullColor() {
+    void setNullColor() {
         this.color = null;
     }
 

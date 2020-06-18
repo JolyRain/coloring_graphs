@@ -4,16 +4,16 @@ public class Line {
     private Line2D line;
     private Edge edge;
 
-    public Line(Line2D line, Edge edge) {
+    Line(Line2D line, Edge edge) {
         this.line = line;
         this.edge = edge;
     }
 
-    public Line2D getLine() {
+    Line2D getLine() {
         return line;
     }
 
-    public Edge getEdge() {
+    Edge getEdge() {
         return edge;
     }
 

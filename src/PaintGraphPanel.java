@@ -5,13 +5,17 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
-public class PaintPanel extends JPanel {
+public class PaintGraphPanel extends JPanel {
     private static final Font FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 15);
-    private static final int LINE_WIDTH = 5;
+    private static final int STROKE_WIDTH = 5;
+    private static final int LINE_WIDTH = 35;
+    private static final int LINE_HEIGHT = 1;
+    private static final int LABEL_CHROMATIC_NUMBER_X = 10;
+    private static final int LABEL_CHROMATIC_NUMBER_Y = 660;
+    private static final int ZERO = 0;
+
     private List<Node> nodes = new LinkedList<>();
     private List<Line> lines = new LinkedList<>();
     private CreatingVertexMode creatingVertexMode = new CreatingVertexMode();
@@ -19,22 +23,23 @@ public class PaintPanel extends JPanel {
     private ConnectingVertexMode connectingVertexMode = new ConnectingVertexMode();
     private Graph graph = new Graph();
 
-    PaintPanel() {
+    PaintGraphPanel() {
         setCreatingMode();
     }
 
     public void paint(Graphics graphics) {
-        graphics.setColor(Color.BLACK);
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
         Graphics2D graphics2D = (Graphics2D) graphics;
-        graphics2D.setStroke(new BasicStroke(LINE_WIDTH));
         graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics2D.setColor(Color.BLACK);
+        graphics2D.setColor(Color.WHITE);
+        graphics2D.fillRect(ZERO, ZERO, this.getWidth(), this.getHeight());
+        graphics2D.setStroke(new BasicStroke(STROKE_WIDTH));
         graphics2D.setFont(FONT);
         graphics2D.setColor(Color.BLACK);
         paintLines(graphics2D);
         paintVertices(graphics2D);
-        graphics2D.drawString("Chromatic number: " + graph.getChromaticNumber(), 10, this.getHeight() - 30);
+        graphics2D.drawString("Chromatic number: " + graph.getChromaticNumber(),
+                LABEL_CHROMATIC_NUMBER_X, LABEL_CHROMATIC_NUMBER_Y);
     }
 
     void clear() {
@@ -90,31 +95,6 @@ public class PaintPanel extends JPanel {
         addMouseListener(connectingVertexMode);
     }
 
-    public void saveToFile() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Node node : nodes) {
-            stringBuilder.append(node).append(graph.getAdjacentVerticesMap().get(node.getVertex()));
-            stringBuilder.append("\n");
-        }
-        for (Line line : lines) {
-            stringBuilder.append(line);
-            stringBuilder.append("\n");
-        }
-        System.out.println(stringBuilder.toString());
-    }
-
-    public void readGraphFromFile(String stringIn) {
-        Pattern patternNode = Pattern.compile("^Node:\\s\\{(\\d)+}\\s\\(\\d*\\.\\d*,\\s\\d*\\.\\d*\\)\\s\\[(\\{\\d*}|(, ))*]$");
-        Pattern patternEdge = Pattern.compile("^Edge:\\s<\\{\\d*},\\s\\{\\d*}>$");
-        Scanner scanFile = new Scanner(stringIn);
-        while (scanFile.hasNextLine()) {
-            String string = scanFile.nextLine();
-            if (string.matches(patternNode.pattern())) {
-                System.out.println("ok!");
-            }
-        }
-    }
-
     private class CreatingVertexMode extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent event) {
@@ -142,7 +122,8 @@ public class PaintPanel extends JPanel {
             for (Line line : lines) {
                 if (vertexClicked) {
                     if (containsLine(deletingNode, line)) deletingLines.add(line);
-                } else if (line.getLine().intersects(event.getX(), event.getY(), 35, 1)) deletingLine = line;
+                } else if (line.getLine().intersects(event.getX(), event.getY(), LINE_WIDTH, LINE_HEIGHT))
+                    deletingLine = line;
             }
             if (vertexClicked) removeNode();
             else if (deletingLine != null) removeLine();
