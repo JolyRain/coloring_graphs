@@ -17,9 +17,10 @@ class App {
     private PaintGraphPanel graphicPanel;
     private JPanel leftPanel;
 
-    App()  {
+    App() throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         createFrame();
         initElements();
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     }
 
     private void createFrame() {

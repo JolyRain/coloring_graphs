@@ -11,7 +11,7 @@ public class PaintGraphPanel extends JPanel {
     private static final Font FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 15);
     private static final int STROKE_WIDTH = 5;
     private static final int LINE_WIDTH = 35;
-    private static final int LINE_HEIGHT = 1;
+    private static final int LINE_HEIGHT = 5;
     private static final int LABEL_CHROMATIC_NUMBER_X = 10;
     private static final int LABEL_CHROMATIC_NUMBER_Y = 660;
     private static final int ZERO = 0;
@@ -29,17 +29,20 @@ public class PaintGraphPanel extends JPanel {
 
     public void paint(Graphics graphics) {
         Graphics2D graphics2D = (Graphics2D) graphics;
-        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics2D.setColor(Color.BLACK);
-        graphics2D.setColor(Color.WHITE);
-        graphics2D.fillRect(ZERO, ZERO, this.getWidth(), this.getHeight());
-        graphics2D.setStroke(new BasicStroke(STROKE_WIDTH));
-        graphics2D.setFont(FONT);
-        graphics2D.setColor(Color.BLACK);
+        setPaintSettings(graphics2D);
         paintLines(graphics2D);
         paintVertices(graphics2D);
         graphics2D.drawString("Chromatic number: " + graph.getChromaticNumber(),
                 LABEL_CHROMATIC_NUMBER_X, LABEL_CHROMATIC_NUMBER_Y);
+    }
+
+    private void setPaintSettings(Graphics2D graphics2D) {
+        graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics2D.setStroke(new BasicStroke(STROKE_WIDTH));
+        graphics2D.setFont(FONT);
+        graphics2D.setColor(Color.WHITE);
+        graphics2D.fillRect(ZERO, ZERO, this.getWidth(), this.getHeight());
+        graphics2D.setColor(Color.BLACK);
     }
 
     void clear() {
@@ -156,8 +159,8 @@ public class PaintGraphPanel extends JPanel {
         }
 
         private boolean containsLine(Node node, Line line) {
-            return node.getCircle().contains(line.getLine().getX1(), line.getLine().getY1()) ||
-                    node.getCircle().contains(line.getLine().getX2(), line.getLine().getY2());
+            return node.getCircle().contains(line.getLine().getX1(), line.getLine().getY1())
+                    || node.getCircle().contains(line.getLine().getX2(), line.getLine().getY2());
         }
     }
 
