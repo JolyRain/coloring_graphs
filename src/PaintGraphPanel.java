@@ -5,7 +5,10 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PaintGraphPanel extends JPanel {
     private static final Font FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 15);
@@ -204,16 +207,106 @@ public class PaintGraphPanel extends JPanel {
                     new Edge(startNode.getVertex(), node.getVertex()));
         }
 
-        private double toHalve(double value) {
-            UnaryOperator<Double> operator = number -> number / 2.0;
-            return operator.apply(value);
-        }
-
         private void clear() {
             startNode = null;
             newLine = null;
             vertexClicked = false;
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Node node : nodes) {
+            stringBuilder.append(node).append(graph.getAdjacentVerticesMap().get(node.getVertex()));
+            stringBuilder.append("\n");
+        }
+        for (Line line : lines) {
+            stringBuilder.append(line);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    public void readGraphFromFile(Scanner scanner) throws Exception {
+        clear();
+        String string;
+        Pattern pattern;
+        Matcher matcher;
+        while (scanner.hasNextLine()) {
+            string = scanner.nextLine();
+            if (string.startsWith("Node:")) {
+                double x, y;
+                int number;
+
+                pattern = Pattern.compile("\\{([\\d]+)}");
+                matcher = pattern.matcher(string);
+                if (matcher.find()) {
+                    number = Integer.parseInt(matcher.group(1));
+                } else {
+                    throw new Exception("Wrong format");
+                }
+
+                pattern = Pattern.compile("\\(+([\\d]+\\.0), ([\\d]+\\.0)\\)");
+                matcher = pattern.matcher(string);
+                if (matcher.find()) {
+                    x = Double.parseDouble(matcher.group(1));
+                    y = Double.parseDouble(matcher.group(2));
+                } else {
+                    throw new Exception("Wrong format");
+                }
+                Vertex newVertex = new Vertex(number);
+                Circle newCircle = new Circle(x, y);
+                Node newNode = new Node(newVertex, newCircle);
+
+                pattern = Pattern.compile("\\[(\\{\\d*}|(, ))*]");
+                matcher = pattern.matcher(string);
+                if (matcher.find()) {
+                    pattern = Pattern.compile("\\{([\\d]+)}[, \\]]");
+                    matcher = pattern.matcher(matcher.group(1));
+                    while (matcher.find()) {
+                        graph.getAdjacentVerticesMap().get(newVertex).add(new Vertex(Integer.parseInt(matcher.group(1))));
+                    }
+                } else {
+                    throw new Exception("Wrong format");
+                }
+
+                graph.addVertex(newVertex);
+                nodes.add(newNode);
+            } else if (string.startsWith("Line:")) {
+                int first, second;
+
+                pattern = Pattern.compile("<\\{([\\d]+)}, \\{([\\d]+)}>");
+                matcher = pattern.matcher(string);
+                if (matcher.find()) {
+                    first = Integer.parseInt(matcher.group(1));
+                    second = Integer.parseInt(matcher.group(2));
+                } else {
+                    throw new Exception("Wrong format");
+                }
+                Node firstNode = nodes.get(graph.getVertices().get(first).getNumber());
+                Node secondNode = nodes.get(graph.getVertices().get(second).getNumber());
+                graph.addEdge(graph.getVertices().get(first), graph.getVertices().get(second));
+                lines.add(setNewLine(firstNode, secondNode));
+            }
+        }
+    }
+
+    private Line setNewLine(Node startNode, Node endNode) {
+        Circle circleStart = startNode.getCircle();
+        Circle circleEnd = endNode.getCircle();
+        double radius = toHalve(circleStart.getRADIUS());
+        return new Line(new Line2D.Double(
+                circleStart.getX() + radius,
+                circleStart.getY() + radius,
+                circleEnd.getX() + radius,
+                circleEnd.getY() + radius),
+                new Edge(startNode.getVertex(), endNode.getVertex()));
+    }
+
+    private double toHalve(double value) {
+        UnaryOperator<Double> operator = number -> number / 2.0;
+        return operator.apply(value);
     }
 }
 

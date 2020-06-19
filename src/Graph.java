@@ -133,4 +133,15 @@ class Graph {
         return chromaticNumber;
     }
 
+    public TreeMap<Vertex, List<Vertex>> getAdjacentVerticesMap() {
+        return adjacentVerticesMap;
+    }
+
+    public List<Vertex> getVertices() {
+        return vertices;
+    }
+
+    public List<Edge> getEdges() {
+        return edges;
+    }
 }

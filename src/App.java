@@ -1,11 +1,5 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 class App {
     private static final int WIDTH = 1280;
@@ -16,11 +10,13 @@ class App {
     private JFrame frame;
     private PaintGraphPanel graphicPanel;
     private JPanel leftPanel;
+    private FileManager fileManager;
 
-    App() throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
+    App() {
         createFrame();
         initElements();
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        fileManager = new FileManager(graphicPanel);
+
     }
 
     private void createFrame() {
@@ -80,39 +76,18 @@ class App {
 
         JButton saveButton = new JButton("Save image");
         saveButton.setFont(FONT_BUTTON);
-        saveButton.addActionListener(e -> saveImage());
+        saveButton.addActionListener(e -> fileManager.saveImage());
         leftPanel.add(saveButton);
+
+        JButton saveFileButton = new JButton("Save file");
+        saveFileButton.setFont(FONT_BUTTON);
+        saveFileButton.addActionListener(e -> fileManager.saveGraphToFile());
+        leftPanel.add(saveFileButton);
+
+        JButton readFileButton = new JButton("Read file");
+        readFileButton.setFont(FONT_BUTTON);
+        readFileButton.addActionListener(e -> fileManager.readGraphFromFile());
+        leftPanel.add(readFileButton);
     }
 
-    private void saveImage() {
-        FileFilter filter = new FileNameExtensionFilter("Image", "png");
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File("./src/images"));
-        fileChooser.addChoosableFileFilter(filter);
-        fileChooser.setAcceptAllFileFilterUsed(false);
-        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            saveImageGraph(fileChooser.getSelectedFile().getAbsolutePath());
-        }
-    }
-
-    private void saveImageGraph(String fileName) {
-        BufferedImage imageGraph = (BufferedImage)
-                graphicPanel.createImage(graphicPanel.getWidth(), graphicPanel.getHeight());
-        Graphics2D graphics2D = imageGraph.createGraphics();
-        graphicPanel.paint(graphics2D);
-        graphics2D.dispose();
-        try {
-            ImageIO.write(imageGraph, "png", new File(checkFileName(fileName)));
-        } catch (IOException io) {
-            JOptionPane.showMessageDialog(null, "Error!!!",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private String checkFileName(String fileName) {
-        if (!fileName.endsWith(".png")) {
-            fileName += ".png";
-        }
-        return fileName;
-    }
 }
