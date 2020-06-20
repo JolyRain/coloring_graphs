@@ -12,7 +12,6 @@ import java.awt.geom.Line2D;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -174,13 +173,13 @@ public class PaintGraphPanel extends JPanel {
         String string;
         while (scanner.hasNextLine()) {
             string = scanner.nextLine();
-            if (string.startsWith("frame.Node:")) {
+            if (string.startsWith("Node:")) {
                 Node newNode = readNodeFromFile(string);
                 Vertex newVertex = newNode.getVertex();
                 readAdjacentListFromFile(newVertex, string);
                 graph.addVertex(newVertex);
                 nodes.add(newNode);
-            } else if (string.startsWith("frame.Line:")) readEdgeFromFile(string);
+            } else if (string.startsWith("Line:")) readEdgeFromFile(string);
         }
     }
 
@@ -197,8 +196,7 @@ public class PaintGraphPanel extends JPanel {
     }
 
     private double correctRadius() {
-        UnaryOperator<Double> operator = number -> number / 2.0;
-        return operator.apply(Circle.RADIUS);
+        return Circle.RADIUS / 2.0;
     }
 
     private class CreatingVertexMode extends MouseAdapter {

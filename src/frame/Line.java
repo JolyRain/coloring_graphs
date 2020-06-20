@@ -23,6 +23,6 @@ public class Line {
 
     @Override
     public String toString() {
-        return "frame.Line: " + edge;
+        return "Line: " + edge;
     }
 }

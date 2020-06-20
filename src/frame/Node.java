@@ -29,6 +29,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return "frame.Node: " + vertex.toString() + " (" + circle.getX() + ", " + circle.getY() + ") ";
+        return "Node: " + vertex.toString() + " (" + circle.getX() + ", " + circle.getY() + ") ";
     }
 }
