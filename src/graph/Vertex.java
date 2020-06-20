@@ -1,3 +1,5 @@
+package graph;
+
 import java.awt.*;
 import java.util.Objects;
 import java.util.Random;
@@ -6,7 +8,7 @@ public class Vertex {
     private int number;
     private Color color;
 
-    Vertex() {
+    public Vertex() {
     }
 
     public Vertex(int number) {
@@ -48,7 +50,7 @@ public class Vertex {
         }
     }
 
-    int getNumber() {
+    public int getNumber() {
         return number;
     }
 
@@ -56,7 +58,7 @@ public class Vertex {
         this.number = number;
     }
 
-    Color getColor() {
+    public Color getColor() {
         return color;
     }
 

@@ -1,3 +1,7 @@
+package frame;
+
+import graph.Vertex;
+
 public class Node {
     private Vertex vertex;
     private Circle circle;
@@ -25,6 +29,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return "Node: " + vertex.toString() + " (" + circle.getX() + ", " + circle.getY() + ") ";
+        return "frame.Node: " + vertex.toString() + " (" + circle.getX() + ", " + circle.getY() + ") ";
     }
 }

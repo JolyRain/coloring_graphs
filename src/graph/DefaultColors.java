@@ -1,3 +1,5 @@
+package graph;
+
 enum DefaultColors {
     RED,
     GREEN,

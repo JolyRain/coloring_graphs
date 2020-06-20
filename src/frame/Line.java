@@ -1,3 +1,7 @@
+package frame;
+
+import graph.Edge;
+
 import java.awt.geom.Line2D;
 
 public class Line {
@@ -19,6 +23,6 @@ public class Line {
 
     @Override
     public String toString() {
-        return "Line: " + edge;
+        return "frame.Line: " + edge;
     }
 }

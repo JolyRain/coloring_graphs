@@ -1,3 +1,5 @@
+import frame.App;
+
 import javax.swing.*;
 
 public class Main {

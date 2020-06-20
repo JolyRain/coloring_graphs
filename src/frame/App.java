@@ -1,7 +1,9 @@
+package frame;
+
 import javax.swing.*;
 import java.awt.*;
 
-class App {
+public class App {
     private static final int WIDTH = 1280;
     private static final int HEIGHT = 720;
     private static final int ZERO = 0;
@@ -12,7 +14,7 @@ class App {
     private JPanel leftPanel;
     private FileManager fileManager;
 
-    App() {
+    public App() {
         createFrame();
         initElements();
         fileManager = new FileManager(graphicPanel);
@@ -28,7 +30,7 @@ class App {
         frame.setResizable(false);
     }
 
-    void show() {
+    public void show() {
         frame.setVisible(true);
     }
 

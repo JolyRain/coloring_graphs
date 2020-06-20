@@ -1,3 +1,5 @@
+package frame;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -9,20 +11,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class FileManager {
+class FileManager {
     private PaintGraphPanel graphicPanel;
-    private FileFilter graphFilter = new FileNameExtensionFilter("Graph files (*.graph)", "graph");
+    private FileFilter graphFilter = new FileNameExtensionFilter("graph.Graph files (*.graph)", "graph");
     private FileFilter filterImage = new FileNameExtensionFilter("PNG files (*.png)", "png");
     private JFileChooser saveImageChooser = new JFileChooser();
     private JFileChooser graphSaveFileChooser = new JFileChooser();
     private JFileChooser saveFileChooser = new JFileChooser();
 
-
-    public FileManager(PaintGraphPanel graphicPanel) {
+    FileManager(PaintGraphPanel graphicPanel) {
         this.graphicPanel = graphicPanel;
     }
 
-    public void saveImage() {
+    void saveImage() {
         saveImageChooser.setCurrentDirectory(new File("./src/images"));
         saveImageChooser.addChoosableFileFilter(filterImage);
         saveImageChooser.setAcceptAllFileFilterUsed(false);
@@ -31,7 +32,7 @@ public class FileManager {
         }
     }
 
-    public void saveImageGraph(String fileName) {
+    private void saveImageGraph(String fileName) {
         BufferedImage imageGraph = (BufferedImage)
                 graphicPanel.createImage(graphicPanel.getWidth(), graphicPanel.getHeight());
         Graphics2D graphics2D = imageGraph.createGraphics();
@@ -59,7 +60,7 @@ public class FileManager {
         return fileName;
     }
 
-    public void saveGraphToFile() {
+    void saveGraphToFile() {
         graphSaveFileChooser.setCurrentDirectory(new File("./src/input"));
         graphSaveFileChooser.addChoosableFileFilter(graphFilter);
         graphSaveFileChooser.setAcceptAllFileFilterUsed(false);
@@ -75,7 +76,7 @@ public class FileManager {
         }
     }
 
-    public void readGraphFromFile() {
+    void readGraphFromFile() {
         saveFileChooser.setCurrentDirectory(new File("./src/input"));
         saveFileChooser.addChoosableFileFilter(graphFilter);
         saveFileChooser.setAcceptAllFileFilterUsed(false);

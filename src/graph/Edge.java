@@ -1,19 +1,21 @@
+package graph;
+
 import java.util.Objects;
 
 public class Edge {
     private Vertex startVertex;
     private Vertex endVertex;
 
-    Edge(Vertex startVertex, Vertex endVertex) {
+    public Edge(Vertex startVertex, Vertex endVertex) {
         this.startVertex = startVertex;
         this.endVertex = endVertex;
     }
 
-    Vertex getStartVertex() {
+    public Vertex getStartVertex() {
         return startVertex;
     }
 
-    Vertex getEndVertex() {
+    public Vertex getEndVertex() {
         return endVertex;
     }
 

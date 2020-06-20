@@ -1,7 +1,9 @@
+package graph;
+
 import java.util.*;
 import java.util.function.Consumer;
 
-class Graph {
+public class Graph {
     private TreeMap<Vertex, List<Vertex>> adjacentVerticesMap = new TreeMap<>(Comparator.comparingInt(Vertex::getNumber));
     private List<Vertex> vertices = new LinkedList<>();
     private List<Edge> edges = new LinkedList<>();
@@ -14,7 +16,7 @@ class Graph {
         }
     }
 
-    void colorize() {
+    public void colorize() {
         if (vertices.isEmpty()) return;
         defaultColors = toQueue(DefaultColors.values());
         clearColor();
@@ -69,7 +71,7 @@ class Graph {
         return false;
     }
 
-    void addVertex(Vertex vertex) {
+    public void addVertex(Vertex vertex) {
         vertex.setNumber(vertices.size());
         adjacentVerticesMap.put(vertex, new LinkedList<>());
         vertices.add(vertex);
@@ -84,7 +86,7 @@ class Graph {
         return false;
     }
 
-    void addEdge(Vertex startVertex, Vertex endVertex) {
+    public void addEdge(Vertex startVertex, Vertex endVertex) {
         if (!isAdjacent(startVertex, endVertex)) {
             adjacentVerticesMap.get(startVertex).add(endVertex);
             adjacentVerticesMap.get(endVertex).add(startVertex);
@@ -92,7 +94,7 @@ class Graph {
         }
     }
 
-    void removeVertex(Vertex deletingVertex) {
+    public void removeVertex(Vertex deletingVertex) {
         vertices.remove(deletingVertex);
         for (Vertex adjacentVertex : adjacentVerticesMap.get(deletingVertex)) {
             List<Vertex> adjacentVertices = adjacentVerticesMap.get(adjacentVertex);
@@ -112,14 +114,14 @@ class Graph {
         }
     }
 
-    void removeEdge(Vertex startVertex, Vertex endVertex) {
+    public void removeEdge(Vertex startVertex, Vertex endVertex) {
         Edge deletingEdge = new Edge(startVertex, endVertex);
         edges.removeIf(edge -> edge.equals(deletingEdge));
         adjacentVerticesMap.get(startVertex).removeIf(adjacentVertex -> adjacentVertex.equals(endVertex));
         adjacentVerticesMap.get(endVertex).removeIf(adjacentVertex -> adjacentVertex.equals(startVertex));
     }
 
-    void clear() {
+    public void clear() {
         if (adjacentVerticesMap != null) adjacentVerticesMap.clear();
         if (defaultColors != null) defaultColors.clear();
         if (vertices != null) vertices.clear();
@@ -130,7 +132,7 @@ class Graph {
         return adjacentVerticesMap.get(vertex);
     }
 
-    int getChromaticNumber() {
+    public int getChromaticNumber() {
         return chromaticNumber;
     }
 
@@ -140,9 +142,5 @@ class Graph {
 
     public List<Vertex> getVertices() {
         return vertices;
-    }
-
-    public List<Edge> getEdges() {
-        return edges;
     }
 }
