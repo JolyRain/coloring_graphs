@@ -7,7 +7,7 @@ public class App {
     private static final int WIDTH = 1280;
     private static final int HEIGHT = 720;
     private static final int ZERO = 0;
-    private static final int LEFT_PANEL_WIDTH = 250;
+    private static final int LEFT_PANEL_WIDTH = 200;
     private static final Font FONT_BUTTON = new Font(Font.SANS_SERIF, Font.BOLD, 18);
     private JFrame frame;
     private PaintGraphPanel graphicPanel;
