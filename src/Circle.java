@@ -2,17 +2,13 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 public class Circle extends Ellipse2D.Double {
-    private final double RADIUS = 40.0;
+    public static final double RADIUS = 40.0;
     private double x;
     private double y;
 
     Circle(double x, double y) {
-        this.x = x - RADIUS / 2;
-        this.y = y - RADIUS / 2;
-    }
-
-    double getRADIUS() {
-        return RADIUS;
+        this.x = x;
+        this.y = y;
     }
 
     @Override
@@ -27,12 +23,12 @@ public class Circle extends Ellipse2D.Double {
 
     @Override
     public double getWidth() {
-        return this.RADIUS;
+        return RADIUS;
     }
 
     @Override
     public double getHeight() {
-        return this.RADIUS;
+        return RADIUS;
     }
 
     @Override

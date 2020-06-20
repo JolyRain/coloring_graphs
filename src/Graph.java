@@ -61,6 +61,7 @@ class Graph {
     }
 
     private boolean isColorOfAdjacentVertex(Vertex coloredVertex) {
+        if (coloredVertex.getColor() == null) return true;
         for (Vertex adjacentVertex : adjacent(coloredVertex)) {
             if (adjacentVertex.getColor() == null) continue;
             if (adjacentVertex.getColor().equals(coloredVertex.getColor())) return true;

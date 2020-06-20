@@ -8,11 +8,11 @@ public class Node {
     }
 
     float getNumberX() {
-        return (float) (circle.getX() + circle.getRADIUS() / 3.0);
+        return (float) (circle.getX() + Circle.RADIUS / 3.0);
     }
 
     float getNumberY() {
-        return (float) (circle.getY() + circle.getRADIUS() / 1.5);
+        return (float) (circle.getY() + Circle.RADIUS / 1.5);
     }
 
     Vertex getVertex() {
