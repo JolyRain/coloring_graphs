@@ -90,6 +90,17 @@ public class App {
         readFileButton.setFont(FONT_BUTTON);
         readFileButton.addActionListener(e -> fileManager.readGraphFromFile());
         leftPanel.add(readFileButton);
+
+        JButton helpButton = new JButton("Instruction");
+        helpButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(null,
+                    "In vertex creation mode - draw a node with a mouse click.\n" +
+                            "In connect mode - click on the node, then on the node you want to join.\n" +
+                            "In deletion mode - by clicking the mouse, delete the elements of the graph.\n",
+                    "How to use", JOptionPane.INFORMATION_MESSAGE);
+        });
+        helpButton.setFont(FONT_BUTTON);
+        leftPanel.add(helpButton);
     }
 
 }
