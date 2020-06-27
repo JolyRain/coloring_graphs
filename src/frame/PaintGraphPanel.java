@@ -87,21 +87,26 @@ public class PaintGraphPanel extends JPanel {
         }
     }
 
-    void setCreatingMode() {
+    private void removeAllListeners() {
+        connectingVertexMode.clear();
         removeMouseListener(connectingVertexMode);
         removeMouseListener(deletingMode);
+        removeMouseListener(creatingVertexMode);
+        repaint();
+    }
+
+    void setCreatingMode() {
+        removeAllListeners();
         addMouseListener(creatingVertexMode);
     }
 
     void setDeletingMode() {
-        removeMouseListener(connectingVertexMode);
-        removeMouseListener(creatingVertexMode);
+        removeAllListeners();
         addMouseListener(deletingMode);
     }
 
     void setModeConnecting() {
-        removeMouseListener(deletingMode);
-        removeMouseListener(creatingVertexMode);
+        removeAllListeners();
         addMouseListener(connectingVertexMode);
     }
 
