@@ -16,11 +16,17 @@ public class Graph {
         }
     }
 
+    private void sortVertices() {
+        vertices.sort((vertex, otherVertex) ->
+                Integer.compare(adjacentVerticesMap.get(otherVertex).size(), adjacentVerticesMap.get(vertex).size()));
+    }
+
     public void colorize() {
         if (vertices.isEmpty()) return;
         defaultColors = toQueue(DefaultColors.values());
         clearColor();
         chromaticNumber = 0;
+        sortVertices();
         colorizer(vertex -> {
             if (!isColored(vertex)) colorizeVertex(vertex);
         });
