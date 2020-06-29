@@ -1,6 +1,7 @@
 import frame.App;
 
 import javax.swing.*;
+import java.util.LinkedList;
 
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException, UnsupportedLookAndFeelException,

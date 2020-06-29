@@ -3,7 +3,7 @@ package graph;
 import java.util.*;
 
 public class Graph {
-    private Map<Vertex, List<Vertex>> adjacencyMap = new HashMap<>();
+    private Map<Vertex, List<Vertex>> adjacencyMap = new TreeMap<>(Comparator.comparingInt(Vertex::getNumber));
     private List<Vertex> vertices = new LinkedList<>();
     private List<Edge> edges = new LinkedList<>();
     private Queue<DefaultColors> defaultColors;
@@ -40,8 +40,16 @@ public class Graph {
     }
 
     private void sortVertices() {
-        vertices.sort((vertex, otherVertex) ->
-                Integer.compare(adjacencyMap.get(otherVertex).size(), adjacencyMap.get(vertex).size()));
+//        vertices.sort((vertex, otherVertex) ->
+//                Integer.compare(adjacencyMap.get(otherVertex).size(), adjacencyMap.get(vertex).size()));
+        vertices.sort(new Comparator<Vertex>() {
+            @Override
+            public int compare(Vertex vertex, Vertex other) {
+                if (adjacencyMap.get(vertex).size() < adjacencyMap.get(other).size()) return 1;
+                else if (adjacencyMap.get(vertex).size() > adjacencyMap.get(other).size()) return -1;
+                else return 0;
+            }
+        });
     }
 
     private void setVertexColor(Vertex vertex) {
