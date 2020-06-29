@@ -114,7 +114,7 @@ public class PaintGraphPanel extends JPanel {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Node node : nodes) {
-            stringBuilder.append(node).append(graph.getAdjacentVerticesMap().get(node.getVertex()));
+            stringBuilder.append(node).append(graph.getAdjacencyMap().get(node.getVertex()));
             stringBuilder.append("\n");
         }
         for (Line line : lines) {
@@ -152,7 +152,7 @@ public class PaintGraphPanel extends JPanel {
                 pattern = Pattern.compile("\\{([\\d]+)}[, \\]]");
                 matcher = pattern.matcher(matcher.group(1));
                 while (matcher.find()) {
-                    graph.getAdjacentVerticesMap().get(vertex).add(new Vertex(Integer.parseInt(matcher.group(1))));
+                    graph.getAdjacencyMap().get(vertex).add(new Vertex(Integer.parseInt(matcher.group(1))));
                 }
             } else throw new Exception("Wrong format");
         }

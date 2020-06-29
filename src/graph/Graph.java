@@ -1,35 +1,27 @@
 package graph;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class Graph {
-    private TreeMap<Vertex, List<Vertex>> adjacentVerticesMap = new TreeMap<>(Comparator.comparingInt(Vertex::getNumber));
+    private Map<Vertex, List<Vertex>> adjacencyMap = new HashMap<>();
     private List<Vertex> vertices = new LinkedList<>();
     private List<Edge> edges = new LinkedList<>();
     private Queue<DefaultColors> defaultColors;
     private int chromaticNumber = 0;
 
-    private void colorizer(Consumer<Vertex> visitor) {
-        for (Vertex currentVertex : vertices) {
-            visitor.accept(currentVertex);
-        }
-    }
-
-    private void sortVertices() {
-        vertices.sort((vertex, otherVertex) ->
-                Integer.compare(adjacentVerticesMap.get(otherVertex).size(), adjacentVerticesMap.get(vertex).size()));
-    }
-
     public void colorize() {
         if (vertices.isEmpty()) return;
         defaultColors = toQueue(DefaultColors.values());
-        clearColor();
+        clearColors();
         chromaticNumber = 0;
         sortVertices();
-        colorizer(vertex -> {
+        colorizer();
+    }
+
+    private void colorizer() {
+        for (Vertex vertex : vertices) {
             if (!isColored(vertex)) colorizeVertex(vertex);
-        });
+        }
     }
 
     private void colorizeVertex(Vertex vertex) {
@@ -47,6 +39,11 @@ public class Graph {
         }
     }
 
+    private void sortVertices() {
+        vertices.sort((vertex, otherVertex) ->
+                Integer.compare(adjacencyMap.get(otherVertex).size(), adjacencyMap.get(vertex).size()));
+    }
+
     private void setVertexColor(Vertex vertex) {
         if (!defaultColors.isEmpty()) vertex.setColor(defaultColors.poll());
         else vertex.setRandomColor();
@@ -56,7 +53,7 @@ public class Graph {
         return new LinkedList<>(Arrays.asList(defaultColors));
     }
 
-    private void clearColor() {
+    private void clearColors() {
         for (Vertex vertex : vertices) {
             vertex.setNullColor();
         }
@@ -77,36 +74,34 @@ public class Graph {
 
     public void addVertex(Vertex vertex) {
         vertex.setNumber(vertices.size());
-        adjacentVerticesMap.put(vertex, new LinkedList<>());
+        adjacencyMap.put(vertex, new LinkedList<>());
         vertices.add(vertex);
     }
 
     private boolean isAdjacent(Vertex firstVertex, Vertex secondVertex) {
         for (Vertex adjacent : adjacent(firstVertex)) {
-            if (adjacent.equals(secondVertex)) {
-                return true;
-            }
+            if (adjacent.equals(secondVertex)) return true;
         }
         return false;
     }
 
     public void addEdge(Vertex startVertex, Vertex endVertex) {
         if (!isAdjacent(startVertex, endVertex)) {
-            adjacentVerticesMap.get(startVertex).add(endVertex);
-            adjacentVerticesMap.get(endVertex).add(startVertex);
+            adjacencyMap.get(startVertex).add(endVertex);
+            adjacencyMap.get(endVertex).add(startVertex);
             edges.add(new Edge(startVertex, endVertex));
         }
     }
 
     public void removeVertex(Vertex deletingVertex) {
         vertices.remove(deletingVertex);
-        for (Vertex adjacentVertex : adjacentVerticesMap.get(deletingVertex)) {
-            List<Vertex> adjacentVertices = adjacentVerticesMap.get(adjacentVertex);
+        for (Vertex adjacentVertex : adjacencyMap.get(deletingVertex)) {
+            List<Vertex> adjacentVertices = adjacencyMap.get(adjacentVertex);
             adjacentVertices.removeIf(currentVertex -> currentVertex.equals(deletingVertex));
         }
-        edges.removeIf(deletingEdge -> deletingEdge.getStartVertex().equals(deletingVertex) ||
-                deletingEdge.getEndVertex().equals(deletingVertex));
-        adjacentVerticesMap.remove(deletingVertex);
+        edges.removeIf(deletingEdge -> deletingEdge.getStartVertex().equals(deletingVertex)
+                || deletingEdge.getEndVertex().equals(deletingVertex));
+        adjacencyMap.remove(deletingVertex);
         recountIndex(deletingVertex);
     }
 
@@ -121,27 +116,28 @@ public class Graph {
     public void removeEdge(Vertex startVertex, Vertex endVertex) {
         Edge deletingEdge = new Edge(startVertex, endVertex);
         edges.removeIf(edge -> edge.equals(deletingEdge));
-        adjacentVerticesMap.get(startVertex).removeIf(adjacentVertex -> adjacentVertex.equals(endVertex));
-        adjacentVerticesMap.get(endVertex).removeIf(adjacentVertex -> adjacentVertex.equals(startVertex));
+        adjacencyMap.get(startVertex).removeIf(adjacentVertex -> adjacentVertex.equals(endVertex));
+        adjacencyMap.get(endVertex).removeIf(adjacentVertex -> adjacentVertex.equals(startVertex));
     }
 
     public void clear() {
-        if (adjacentVerticesMap != null) adjacentVerticesMap.clear();
+        if (adjacencyMap != null) adjacencyMap.clear();
         if (defaultColors != null) defaultColors.clear();
         if (vertices != null) vertices.clear();
+        if (edges != null) edges.clear();
         chromaticNumber = 0;
     }
 
     private Iterable<Vertex> adjacent(Vertex vertex) {
-        return adjacentVerticesMap.get(vertex);
+        return adjacencyMap.get(vertex);
     }
 
     public int getChromaticNumber() {
         return chromaticNumber;
     }
 
-    public TreeMap<Vertex, List<Vertex>> getAdjacentVerticesMap() {
-        return adjacentVerticesMap;
+    public Map<Vertex, List<Vertex>> getAdjacencyMap() {
+        return adjacencyMap;
     }
 
     public List<Vertex> getVertices() {
