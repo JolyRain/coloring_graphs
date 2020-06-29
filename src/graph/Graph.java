@@ -40,16 +40,8 @@ public class Graph {
     }
 
     private void sortVertices() {
-//        vertices.sort((vertex, otherVertex) ->
-//                Integer.compare(adjacencyMap.get(otherVertex).size(), adjacencyMap.get(vertex).size()));
-        vertices.sort(new Comparator<Vertex>() {
-            @Override
-            public int compare(Vertex vertex, Vertex other) {
-                if (adjacencyMap.get(vertex).size() < adjacencyMap.get(other).size()) return 1;
-                else if (adjacencyMap.get(vertex).size() > adjacencyMap.get(other).size()) return -1;
-                else return 0;
-            }
-        });
+        vertices.sort((vertex, otherVertex) ->
+                Integer.compare(adjacencyMap.get(otherVertex).size(), adjacencyMap.get(vertex).size()));
     }
 
     private void setVertexColor(Vertex vertex) {
