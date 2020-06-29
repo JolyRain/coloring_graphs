@@ -33,19 +33,17 @@ public class Graph {
     }
 
     private void colorizeVertex(Vertex vertex) {
-        int bufferChromaticNumber = 0;
         for (Vertex currentVertex : vertices) {
             if (currentVertex.equals(vertex)) continue;
-            if (isAdjacent(currentVertex, vertex)) bufferChromaticNumber++;
-            else {
+            if (!isAdjacent(currentVertex, vertex)) {
                 vertex.setColor(currentVertex.getColor());
-                if (!isColorOfAdjacentVertex(vertex)) break;
+                if (isColorOfAdjacentVertex(vertex)) vertex.setNullColor();
+                else break;
             }
-            if (bufferChromaticNumber >= chromaticNumber) {
-                setVertexColor(vertex);
-                chromaticNumber++;
-                break;
-            }
+        }
+        if (vertex.getColor() == null) {
+            setVertexColor(vertex);
+            chromaticNumber++;
         }
     }
 
